@@ -1,120 +1,73 @@
-// 🔥 IMPORTANT FIX FOR RENDER
-const socket = io(window.location.origin);
+const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
 
-let time = 120;
-let interval;
-let isTimerRunning = false;
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 
-socket.on("connect", () => {
-  console.log("Connected:", socket.id);
-});
+app.use(express.static(__dirname));
 
-socket.on("startChat", () => {
-  clearChat();
-  addMsg("You have 2 minutes. Impress them.", "system");
-  setStatus("You’re in. Make it count.");
-  startTimer();
-  document.getElementById("msg").focus();
-});
+let waitingUser = null;
 
-socket.on("message", (msg) => {
-  addMsg(msg, "stranger");
-});
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
 
-socket.on("typing", () => {
-  const t = document.getElementById("typing");
-  t.innerText = "Someone is typing...";
-  setTimeout(() => t.innerText = "", 1000);
-});
+  // MATCH USERS
+  if (waitingUser && waitingUser.id !== socket.id) {
+    const room = waitingUser.id + "-" + socket.id;
 
-socket.on("continueChat", () => {
-  addMsg("Connection unlocked 🔓", "system");
-  document.getElementById("actions").style.display = "none";
-});
+    socket.join(room);
+    waitingUser.join(room);
 
-socket.on("endChat", () => {
-  addMsg("No match. Rizz again.", "system");
-  setStatus("Finding someone...");
-  setTimeout(() => {
-    clearChat();
-    socket.emit("nextUser");
-  }, 1200);
-});
+    socket.room = room;
+    waitingUser.room = room;
 
-function send() {
-  const input = document.getElementById("msg");
-  const msg = input.value.trim();
-  if (!msg) return;
+    socket.emit("startChat");
+    waitingUser.emit("startChat");
 
-  socket.emit("message", msg);
-  addMsg(msg, "you");
-  input.value = "";
-}
+    waitingUser = null;
+  } else {
+    waitingUser = socket;
+  }
 
-function typing() {
-  socket.emit("typing");
-}
-
-function addMsg(text, type) {
-  const div = document.createElement("div");
-  div.classList.add("msg");
-
-  if (type === "you") div.classList.add("you");
-  else if (type === "stranger") div.classList.add("stranger");
-  else div.classList.add("system");
-
-  div.innerText = text;
-  document.getElementById("chat").appendChild(div);
-
-  const chat = document.getElementById("chat");
-  chat.scrollTop = chat.scrollHeight;
-}
-
-function clearChat() {
-  document.getElementById("chat").innerHTML = "";
-}
-
-function startTimer() {
-  if (isTimerRunning) return;
-
-  isTimerRunning = true;
-  time = 120;
-
-  clearInterval(interval);
-
-  interval = setInterval(() => {
-    time--;
-    const timerEl = document.getElementById("timer");
-    timerEl.innerText = format(time);
-
-    if (time < 20) timerEl.style.color = "#ff4d8d";
-
-    if (time <= 0) {
-      clearInterval(interval);
-      isTimerRunning = false;
-      document.getElementById("actions").style.display = "flex";
-      setStatus("Make your move.");
+  // SEND MESSAGE
+  socket.on("message", (msg) => {
+    if (socket.room) {
+      socket.to(socket.room).emit("message", msg);
     }
-  }, 1000);
-}
+  });
 
-function format(s) {
-  let m = Math.floor(s / 60);
-  let sec = s % 60;
-  return m + ":" + (sec < 10 ? "0" : "") + sec;
-}
+  // NEXT USER
+  socket.on("nextUser", () => {
+    socket.leave(socket.room);
+    socket.room = null;
 
-function decide(choice) {
-  setStatus("Waiting on them...");
-  socket.emit("decision", choice);
-}
+    if (waitingUser && waitingUser.id !== socket.id) {
+      const room = waitingUser.id + "-" + socket.id;
 
-function exitChat() {
-  setStatus("Finding someone...");
-  clearChat();
-  socket.emit("nextUser");
-}
+      socket.join(room);
+      waitingUser.join(room);
 
-function setStatus(text) {
-  document.getElementById("status").innerText = text;
-}
+      socket.emit("startChat");
+      waitingUser.emit("startChat");
+
+      waitingUser = null;
+    } else {
+      waitingUser = socket;
+    }
+  });
+
+  // DISCONNECT
+  socket.on("disconnect", () => {
+    if (waitingUser === socket) waitingUser = null;
+
+    if (socket.room) {
+      socket.to(socket.room).emit("endChat");
+    }
+  });
+});
+
+server.listen(process.env.PORT || 3000, () => {
+  console.log("Server running...");
+});

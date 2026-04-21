@@ -6,12 +6,10 @@
   <script src="/socket.io/socket.io.js"></script>
 
   <style>
-    * { transition: all 0.2s ease; }
-
     body {
       margin: 0;
-      font-family: -apple-system, sans-serif;
-      background: radial-gradient(circle at top, #1a1024, #050308);
+      font-family: Arial;
+      background: #0b0615;
       color: white;
       display: flex;
       justify-content: center;
@@ -21,146 +19,45 @@
 
     .app {
       width: 100%;
-      max-width: 500px;
-      height: 100vh;
-      max-height: 700px;
+      max-width: 400px;
+      height: 90vh;
+      background: #151020;
       display: flex;
       flex-direction: column;
-      background: rgba(20,15,30,0.8);
-      backdrop-filter: blur(20px);
-      border-radius: 20px;
-      box-shadow: 0 0 40px rgba(140,80,255,0.15);
+      border-radius: 10px;
       overflow: hidden;
-    }
-
-    @media (max-width: 768px) {
-      .app { border-radius: 0; }
-    }
-
-    .header {
-      text-align: center;
-      padding: 15px;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-
-    .logo {
-      font-size: 20px;
-      font-weight: 700;
-      background: linear-gradient(90deg, #fff, #c7a6ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .timer { color: #b388ff; font-size: 14px; }
-
-    .status {
-      font-size: 12px;
-      opacity: 0.6;
-      margin-top: 5px;
     }
 
     .chat {
       flex: 1;
-      padding: 15px;
+      padding: 10px;
       overflow-y: auto;
-      display: flex;
-      flex-direction: column;
     }
 
     .msg {
-      padding: 10px 14px;
-      margin: 6px 0;
-      border-radius: 16px;
-      max-width: 75%;
-      animation: fadeIn 0.25s ease;
+      margin: 5px 0;
+      padding: 8px;
+      border-radius: 10px;
     }
 
-    .you {
-      background: linear-gradient(135deg, #8c52ff, #5f2bff);
-      margin-left: auto;
-      box-shadow: 0 0 10px rgba(140,80,255,0.4);
-    }
+    .you { background: #7b4bff; text-align: right; }
+    .stranger { background: #333; }
 
-    .stranger {
-      background: rgba(255,255,255,0.06);
-    }
-
-    .system {
-      text-align: center;
-      font-size: 12px;
-      opacity: 0.6;
-    }
-
-    .input-area {
+    .input {
       display: flex;
-      padding: 10px;
-      border-top: 1px solid rgba(255,255,255,0.05);
     }
 
     input {
       flex: 1;
-      padding: 12px;
-      border-radius: 12px;
+      padding: 10px;
       border: none;
-      outline: none;
-      background: rgba(255,255,255,0.08);
-      color: white;
     }
 
     button {
-      margin-left: 8px;
-      padding: 12px;
-      border-radius: 12px;
-      border: none;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    button:hover { transform: scale(1.05); }
-    button:active { transform: scale(0.95); }
-
-    .send {
-      background: linear-gradient(135deg, #8c52ff, #5f2bff);
-      box-shadow: 0 0 12px rgba(140,80,255,0.5);
-    }
-
-    .actions {
-      display: none;
       padding: 10px;
-      gap: 10px;
-    }
-
-    .continue {
-      flex: 1;
-      background: linear-gradient(135deg, #8c52ff, #5f2bff);
-      animation: glowPulse 2s infinite;
-    }
-
-    .next {
-      flex: 1;
-      background: rgba(255,255,255,0.1);
-    }
-
-    .exit {
-      margin: 10px;
-      background: rgba(255,0,0,0.3);
-    }
-
-    #typing {
-      text-align: center;
-      font-size: 12px;
-      opacity: 0.6;
-    }
-
-    @keyframes fadeIn {
-      from {opacity: 0; transform: translateY(10px);}
-      to {opacity: 1; transform: translateY(0);}
-    }
-
-    @keyframes glowPulse {
-      0% { box-shadow: 0 0 10px rgba(140,80,255,0.4); }
-      50% { box-shadow: 0 0 20px rgba(140,80,255,0.7); }
-      100% { box-shadow: 0 0 10px rgba(140,80,255,0.4); }
+      background: #7b4bff;
+      color: white;
+      border: none;
     }
   </style>
 </head>
@@ -168,28 +65,12 @@
 <body>
 
 <div class="app">
-
-  <div class="header">
-    <div class="logo">🔥 Rizzler</div>
-    <div class="timer" id="timer">2:00</div>
-    <div class="status" id="status">Finding someone...</div>
-  </div>
-
   <div class="chat" id="chat"></div>
-  <div id="typing"></div>
 
-  <div class="input-area">
-    <input id="msg" placeholder="Say something smooth..." oninput="typing()" />
-    <button class="send" onclick="send()">Send</button>
+  <div class="input">
+    <input id="msg" placeholder="Type..." />
+    <button onclick="send()">Send</button>
   </div>
-
-  <div class="actions" id="actions">
-    <button class="continue" onclick="decide('continue')">Continue</button>
-    <button class="next" onclick="decide('next')">Next</button>
-  </div>
-
-  <button class="exit" onclick="exitChat()">Exit</button>
-
 </div>
 
 <script src="script.js"></script>
