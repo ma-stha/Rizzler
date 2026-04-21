@@ -40,7 +40,11 @@ io.on("connection", (socket) => {
 
   // NEXT USER
   socket.on("nextUser", () => {
-    socket.leave(socket.room);
+    if (socket.room) {
+      socket.leave(socket.room);
+      socket.to(socket.room).emit("endChat");
+    }
+
     socket.room = null;
 
     if (waitingUser && waitingUser.id !== socket.id) {
