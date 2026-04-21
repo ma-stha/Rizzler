@@ -13,23 +13,9 @@ let waitingUser = null;
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
-  // 🔗 MATCHING LOGIC
+  // 🔗 MATCHING
   if (waitingUser && waitingUser !== socket) {
-    const room = `room-${waitingUser.id}-${socket.id}`;
-
-    socket.join(room);
-    waitingUser.join(room);
-
-    socket.room = room;
-    waitingUser.room = room;
-
-    socket.choice = null;
-    waitingUser.choice = null;
-
-    io.to(room).emit("startChat");
-
-    console.log("Paired:", waitingUser.id, socket.id);
-
+    pairUsers(waitingUser, socket);
     waitingUser = null;
   } else {
     waitingUser = socket;
@@ -43,14 +29,14 @@ io.on("connection", (socket) => {
     }
   });
 
-  // ✍️ TYPING INDICATOR
+  // ✍️ TYPING
   socket.on("typing", () => {
     if (socket.room) {
       socket.to(socket.room).emit("typing");
     }
   });
 
-  // 🤝 DECISION (CONTINUE / NEXT)
+  // 🤝 DECISION
   socket.on("decision", (choice) => {
     socket.choice = choice;
 
@@ -65,14 +51,12 @@ io.on("connection", (socket) => {
 
     clients.forEach((id) => {
       const s = io.sockets.sockets.get(id);
-
       if (!s.choice) bothChosen = false;
       if (s.choice !== "continue") bothContinue = false;
     });
 
     if (bothChosen) {
       if (bothContinue) {
-        // reset choices
         clients.forEach((id) => {
           const s = io.sockets.sockets.get(id);
           s.choice = null;
@@ -85,17 +69,49 @@ io.on("connection", (socket) => {
     }
   });
 
+  // 🔄 NEXT USER (NEW FEATURE)
+  socket.on("nextUser", () => {
+    socket.leave(socket.room);
+    socket.room = null;
+    socket.choice = null;
+
+    if (waitingUser && waitingUser !== socket) {
+      pairUsers(waitingUser, socket);
+      waitingUser = null;
+    } else {
+      waitingUser = socket;
+    }
+  });
+
   // ❌ DISCONNECT
   socket.on("disconnect", () => {
     console.log("Disconnected:", socket.id);
-
     if (waitingUser === socket) {
       waitingUser = null;
     }
   });
 });
 
-// 🚀 START SERVER
-server.listen(3000, () => {
-  console.log("Server running on http://localhost:3000");
+// 🔗 HELPER FUNCTION
+function pairUsers(user1, user2) {
+  const room = `room-${user1.id}-${user2.id}`;
+
+  user1.join(room);
+  user2.join(room);
+
+  user1.room = room;
+  user2.room = room;
+
+  user1.choice = null;
+  user2.choice = null;
+
+  io.to(room).emit("startChat");
+
+  console.log("Paired:", user1.id, user2.id);
+}
+
+// 🚀 START
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log("Server running on port " + PORT);
 });

@@ -4,7 +4,6 @@
   <title>Rizler</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0f0f0f">
-
   <script src="/socket.io/socket.io.js"></script>
 
   <style>
@@ -196,8 +195,10 @@
 const socket = io();
 
 socket.on("startChat", () => {
-  addMsg("You have 2 minutes. Go.", "system");
+  clearChat();
+  addMsg("2 minutes. Impress or skip.", "system");
   startTimer();
+  document.getElementById("msg").focus();
 });
 
 socket.on("message", (msg) => {
@@ -219,7 +220,10 @@ socket.on("continueChat", () => {
 
 socket.on("endChat", () => {
   addMsg("Moving to next...", "system");
-  setTimeout(() => location.reload(), 1000);
+  setTimeout(() => {
+    clearChat();
+    socket.emit("nextUser");
+  }, 500);
 });
 
 function send() {
@@ -248,6 +252,10 @@ function addMsg(text, type) {
   div.innerText = text;
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
+}
+
+function clearChat() {
+  document.getElementById("chat").innerHTML = "";
 }
 
 let time = 120;
@@ -284,7 +292,8 @@ function decide(choice) {
 
 function exitChat() {
   if (confirm("Leave chat?")) {
-    location.reload();
+    clearChat();
+    socket.emit("nextUser");
   }
 }
 </script>
