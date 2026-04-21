@@ -31,7 +31,7 @@ io.on("connection", (socket) => {
     waitingUser = socket;
   }
 
-  // SEND MESSAGE
+  // MESSAGE
   socket.on("message", (msg) => {
     if (socket.room) {
       socket.to(socket.room).emit("message", msg);
@@ -49,6 +49,9 @@ io.on("connection", (socket) => {
       socket.join(room);
       waitingUser.join(room);
 
+      socket.room = room;
+      waitingUser.room = room;
+
       socket.emit("startChat");
       waitingUser.emit("startChat");
 
@@ -60,7 +63,11 @@ io.on("connection", (socket) => {
 
   // DISCONNECT
   socket.on("disconnect", () => {
-    if (waitingUser === socket) waitingUser = null;
+    console.log("User disconnected:", socket.id);
+
+    if (waitingUser === socket) {
+      waitingUser = null;
+    }
 
     if (socket.room) {
       socket.to(socket.room).emit("endChat");
