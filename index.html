@@ -3,18 +3,17 @@
 <head>
   <title>Rizler</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0f0f0f">
   <script src="/socket.io/socket.io.js"></script>
 
   <style>
     body {
       margin: 0;
-      background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
+      background: #0f0f0f;
       font-family: -apple-system, sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
+      height: 100vh;
       color: white;
     }
 
@@ -23,46 +22,36 @@
       max-width: 420px;
       height: 100vh;
       max-height: 700px;
-      background: rgba(255,255,255,0.05);
-      backdrop-filter: blur(20px);
       display: flex;
       flex-direction: column;
-      overflow: hidden;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.7);
-    }
-
-    @media (min-width: 768px) {
-      .app {
-        border-radius: 25px;
-        height: 640px;
-      }
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(20px);
     }
 
     .header {
-      padding: 15px;
       text-align: center;
+      padding: 12px;
       border-bottom: 1px solid rgba(255,255,255,0.1);
     }
 
     .timer {
-      font-size: 20px;
       color: #00ffcc;
+      font-size: 18px;
     }
 
     .chat {
       flex: 1;
-      padding: 15px;
       overflow-y: auto;
+      padding: 10px;
       display: flex;
       flex-direction: column;
     }
 
     .msg {
-      padding: 10px 14px;
-      margin: 6px 0;
-      border-radius: 18px;
-      max-width: 75%;
-      animation: fadeIn 0.2s ease;
+      padding: 10px;
+      margin: 5px;
+      border-radius: 15px;
+      max-width: 70%;
     }
 
     .you {
@@ -76,15 +65,9 @@
     }
 
     .system {
-      font-size: 12px;
-      opacity: 0.6;
       text-align: center;
-    }
-
-    .typing {
       font-size: 12px;
       opacity: 0.6;
-      margin: 5px;
     }
 
     .input-area {
@@ -95,27 +78,25 @@
 
     input {
       flex: 1;
-      padding: 12px;
-      border-radius: 12px;
+      padding: 10px;
+      border-radius: 10px;
       border: none;
       background: rgba(255,255,255,0.1);
       color: white;
-      font-size: 16px;
     }
 
     button {
-      margin-left: 8px;
+      margin-left: 5px;
       padding: 10px;
-      border-radius: 12px;
+      border-radius: 10px;
       border: none;
       cursor: pointer;
-      font-weight: bold;
     }
 
-    .send {
-      background: #00ffcc;
-      color: black;
-    }
+    .send { background: #00ffcc; color: black; }
+    .continue { background: green; color: white; }
+    .next { background: red; color: white; }
+    .exit { background: darkred; color: white; }
 
     .actions {
       display: none;
@@ -123,42 +104,9 @@
       padding: 10px;
     }
 
-    .continue {
-      background: #00ffcc;
-      color: black;
-      flex: 1;
-      margin: 5px;
-    }
-
-    .next {
-      background: #ff4d4d;
-      flex: 1;
-      margin: 5px;
-      color: white;
-    }
-
-    .bottom-bar {
+    .bottom {
+      text-align: center;
       padding: 10px;
-      border-top: 1px solid rgba(255,255,255,0.1);
-      display: flex;
-      justify-content: center;
-    }
-
-    .exit {
-      background: rgba(255,77,77,0.2);
-      color: #ff4d4d;
-      border: 1px solid rgba(255,77,77,0.4);
-      padding: 10px 20px;
-    }
-
-    .exit:hover {
-      background: #ff4d4d;
-      color: white;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(5px); }
-      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
@@ -166,17 +114,15 @@
 <body>
 
 <div class="app">
-
   <div class="header">
     🔥 Rizler
     <div class="timer" id="timer">2:00</div>
   </div>
 
   <div class="chat" id="chat"></div>
-  <div id="typing" class="typing"></div>
 
   <div class="input-area">
-    <input id="msg" placeholder="Say something..." oninput="typing()" />
+    <input id="msg" placeholder="Say something..." />
     <button class="send" onclick="send()">Send</button>
   </div>
 
@@ -185,47 +131,46 @@
     <button class="next" onclick="decide('next')">Next</button>
   </div>
 
-  <div class="bottom-bar">
+  <div class="bottom">
     <button class="exit" onclick="exitChat()">Exit</button>
   </div>
-
 </div>
 
 <script>
 const socket = io();
 
+let time = 120;
+let interval;
+let isTimerRunning = false;
+
+// START CHAT (timer runs ONLY here)
 socket.on("startChat", () => {
   clearChat();
-  addMsg("2 minutes. Impress or skip.", "system");
+  addMsg("You have 2 minutes. Go.", "system");
   startTimer();
-  document.getElementById("msg").focus();
 });
 
+// RECEIVE MESSAGE
 socket.on("message", (msg) => {
   addMsg(msg, "stranger");
 });
 
-socket.on("typing", () => {
-  document.getElementById("typing").innerText = "Stranger is typing...";
-  setTimeout(() => {
-    document.getElementById("typing").innerText = "";
-  }, 1000);
-});
-
+// CONTINUE CHAT (NO TIMER RESET HERE ❗)
 socket.on("continueChat", () => {
-  addMsg("Both matched 🔥", "system");
+  addMsg("Both matched 🔥 Continue chatting", "system");
   document.getElementById("actions").style.display = "none";
-  startTimer();
 });
 
+// END CHAT → FIND NEW USER
 socket.on("endChat", () => {
-  addMsg("Moving to next...", "system");
+  addMsg("Finding new person...", "system");
   setTimeout(() => {
     clearChat();
     socket.emit("nextUser");
-  }, 500);
+  }, 800);
 });
 
+// SEND MESSAGE
 function send() {
   const input = document.getElementById("msg");
   const msg = input.value.trim();
@@ -236,12 +181,8 @@ function send() {
   input.value = "";
 }
 
-function typing() {
-  socket.emit("typing");
-}
-
+// ADD MESSAGE UI
 function addMsg(text, type) {
-  const chat = document.getElementById("chat");
   const div = document.createElement("div");
   div.classList.add("msg");
 
@@ -250,19 +191,21 @@ function addMsg(text, type) {
   else div.classList.add("system");
 
   div.innerText = text;
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
+  document.getElementById("chat").appendChild(div);
 }
 
+// CLEAR CHAT
 function clearChat() {
   document.getElementById("chat").innerHTML = "";
 }
 
-let time = 120;
-let interval;
-
+// TIMER (FIXED BUG)
 function startTimer() {
+  if (isTimerRunning) return;
+
+  isTimerRunning = true;
   time = 120;
+
   clearInterval(interval);
 
   interval = setInterval(() => {
@@ -271,25 +214,25 @@ function startTimer() {
 
     if (time <= 0) {
       clearInterval(interval);
-      showActions();
+      isTimerRunning = false;
+      document.getElementById("actions").style.display = "flex";
     }
   }, 1000);
 }
 
+// FORMAT TIME
 function format(s) {
-  const m = Math.floor(s/60);
-  const sec = s%60;
+  let m = Math.floor(s / 60);
+  let sec = s % 60;
   return m + ":" + (sec < 10 ? "0" : "") + sec;
 }
 
-function showActions() {
-  document.getElementById("actions").style.display = "flex";
-}
-
+// DECISION
 function decide(choice) {
   socket.emit("decision", choice);
 }
 
+// EXIT
 function exitChat() {
   if (confirm("Leave chat?")) {
     clearChat();
