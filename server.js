@@ -1,117 +1,115 @@
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
+const socket = io();
 
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
+let time = 120;
+let interval;
+let isTimerRunning = false;
 
-app.use(express.static(__dirname));
-
-let waitingUser = null;
-
-io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
-
-  // 🔗 MATCHING
-  if (waitingUser && waitingUser !== socket) {
-    pairUsers(waitingUser, socket);
-    waitingUser = null;
-  } else {
-    waitingUser = socket;
-    console.log("Waiting for partner...");
-  }
-
-  // 💬 MESSAGE
-  socket.on("message", (msg) => {
-    if (socket.room) {
-      socket.to(socket.room).emit("message", msg);
-    }
-  });
-
-  // ✍️ TYPING
-  socket.on("typing", () => {
-    if (socket.room) {
-      socket.to(socket.room).emit("typing");
-    }
-  });
-
-  // 🤝 DECISION
-  socket.on("decision", (choice) => {
-    socket.choice = choice;
-
-    const room = socket.room;
-    if (!room) return;
-
-    const clients = io.sockets.adapter.rooms.get(room);
-    if (!clients) return;
-
-    let bothChosen = true;
-    let bothContinue = true;
-
-    clients.forEach((id) => {
-      const s = io.sockets.sockets.get(id);
-      if (!s.choice) bothChosen = false;
-      if (s.choice !== "continue") bothContinue = false;
-    });
-
-    if (bothChosen) {
-      if (bothContinue) {
-        clients.forEach((id) => {
-          const s = io.sockets.sockets.get(id);
-          s.choice = null;
-        });
-
-        io.to(room).emit("continueChat");
-      } else {
-        io.to(room).emit("endChat");
-      }
-    }
-  });
-
-  // 🔄 NEXT USER (NEW FEATURE)
-  socket.on("nextUser", () => {
-    socket.leave(socket.room);
-    socket.room = null;
-    socket.choice = null;
-
-    if (waitingUser && waitingUser !== socket) {
-      pairUsers(waitingUser, socket);
-      waitingUser = null;
-    } else {
-      waitingUser = socket;
-    }
-  });
-
-  // ❌ DISCONNECT
-  socket.on("disconnect", () => {
-    console.log("Disconnected:", socket.id);
-    if (waitingUser === socket) {
-      waitingUser = null;
-    }
-  });
+socket.on("startChat", () => {
+  clearChat();
+  addMsg("You have 2 minutes. Impress them.", "system");
+  setStatus("You’re in. Make it count.");
+  startTimer();
+  document.getElementById("msg").focus();
 });
 
-// 🔗 HELPER FUNCTION
-function pairUsers(user1, user2) {
-  const room = `room-${user1.id}-${user2.id}`;
+socket.on("message", (msg) => {
+  addMsg(msg, "stranger");
+});
 
-  user1.join(room);
-  user2.join(room);
+socket.on("typing", () => {
+  const t = document.getElementById("typing");
+  t.innerText = "Someone is typing...";
+  setTimeout(() => t.innerText = "", 1000);
+});
 
-  user1.room = room;
-  user2.room = room;
+socket.on("continueChat", () => {
+  addMsg("Connection unlocked 🔓", "system");
+  document.getElementById("actions").style.display = "none";
+});
 
-  user1.choice = null;
-  user2.choice = null;
+socket.on("endChat", () => {
+  addMsg("No match. Rizz again.", "system");
+  setStatus("Finding someone...");
+  setTimeout(() => {
+    clearChat();
+    socket.emit("nextUser");
+  }, 1200);
+});
 
-  io.to(room).emit("startChat");
+function send() {
+  const input = document.getElementById("msg");
+  const msg = input.value.trim();
+  if (!msg) return;
 
-  console.log("Paired:", user1.id, user2.id);
+  socket.emit("message", msg);
+  addMsg(msg, "you");
+  input.value = "";
 }
 
-// 🚀 START
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
-});
+function typing() {
+  socket.emit("typing");
+}
+
+function addMsg(text, type) {
+  const div = document.createElement("div");
+  div.classList.add("msg");
+
+  if (type === "you") div.classList.add("you");
+  else if (type === "stranger") div.classList.add("stranger");
+  else div.classList.add("system");
+
+  div.innerText = text;
+  document.getElementById("chat").appendChild(div);
+
+  const chat = document.getElementById("chat");
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function clearChat() {
+  document.getElementById("chat").innerHTML = "";
+}
+
+function startTimer() {
+  if (isTimerRunning) return;
+
+  isTimerRunning = true;
+  time = 120;
+
+  clearInterval(interval);
+
+  interval = setInterval(() => {
+    time--;
+    const timerEl = document.getElementById("timer");
+    timerEl.innerText = format(time);
+
+    if (time < 20) timerEl.style.color = "#ff4d8d";
+
+    if (time <= 0) {
+      clearInterval(interval);
+      isTimerRunning = false;
+      document.getElementById("actions").style.display = "flex";
+      setStatus("Make your move.");
+    }
+  }, 1000);
+}
+
+function format(s) {
+  let m = Math.floor(s / 60);
+  let sec = s % 60;
+  return m + ":" + (sec < 10 ? "0" : "") + sec;
+}
+
+function decide(choice) {
+  setStatus("Waiting on them...");
+  socket.emit("decision", choice);
+}
+
+function exitChat() {
+  setStatus("Finding someone...");
+  clearChat();
+  socket.emit("nextUser");
+}
+
+function setStatus(text) {
+  document.getElementById("status").innerText = text;
+}
