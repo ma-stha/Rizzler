@@ -8,49 +8,37 @@
   <style>
     body {
       margin: 0;
-      font-family: -apple-system, sans-serif;
-      background: radial-gradient(circle at top, #140a22, #050308);
+      font-family: -apple-system;
+      background: #0b0615;
       color: white;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      overflow: hidden;
     }
 
     .app {
       width: 100%;
       max-width: 420px;
       height: 100vh;
-      background: rgba(20,15,30,0.95);
-      backdrop-filter: blur(20px);
       display: flex;
       flex-direction: column;
     }
 
     .header {
       text-align: center;
-      padding: 14px;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding: 10px;
     }
 
-    .logo {
-      font-weight: 700;
-      font-size: 18px;
-      background: linear-gradient(90deg, #fff, #c7a6ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .status {
-      font-size: 13px;
-      opacity: 0.6;
-      margin-top: 4px;
+    .timer {
+      color: #7b4bff;
+      font-size: 20px;
+      margin-top: 5px;
     }
 
     .chat {
       flex: 1;
-      padding: 12px;
+      padding: 10px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
@@ -61,61 +49,54 @@
       margin: 4px 0;
       border-radius: 14px;
       max-width: 70%;
-      font-size: 14px;
     }
 
     .you {
-      background: linear-gradient(135deg, #8c52ff, #5f2bff);
+      background: #7b4bff;
       align-self: flex-end;
     }
 
     .stranger {
-      background: rgba(255,255,255,0.08);
+      background: #333;
       align-self: flex-start;
-    }
-
-    .system {
-      text-align: center;
-      font-size: 12px;
-      opacity: 0.5;
     }
 
     .input-area {
       display: flex;
       padding: 10px;
-      border-top: 1px solid rgba(255,255,255,0.05);
     }
 
     input {
       flex: 1;
       padding: 12px;
-      border-radius: 12px;
+      font-size: 16px;
+      border-radius: 10px;
       border: none;
-      outline: none;
-      background: rgba(255,255,255,0.08);
-      color: white;
-      font-size: 16px; /* FIXES ZOOM */
     }
 
     button {
-      margin-left: 6px;
-      padding: 10px 14px;
-      border-radius: 12px;
-      border: none;
-      cursor: pointer;
-      background: linear-gradient(135deg, #8c52ff, #5f2bff);
+      margin-left: 5px;
+      padding: 10px;
+      background: #7b4bff;
       color: white;
-      font-weight: 600;
+      border: none;
+      border-radius: 10px;
     }
 
-    .exit {
+    .popup {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #111;
+      padding: 20px;
+      border-radius: 10px;
+      display: none;
+      text-align: center;
+    }
+
+    .popup button {
       margin: 10px;
-      padding: 12px;
-      border-radius: 12px;
-      border: none;
-      background: rgba(255,0,0,0.3);
-      color: white;
-      font-weight: 600;
     }
   </style>
 </head>
@@ -125,8 +106,9 @@
 <div class="app">
 
   <div class="header">
-    <div class="logo">🔥 Rizzler</div>
-    <div class="status" id="status">Finding someone...</div>
+    <div>🔥 Rizzler</div>
+    <div id="status">Finding someone...</div>
+    <div class="timer" id="timer"></div>
   </div>
 
   <div class="chat" id="chat"></div>
@@ -136,8 +118,12 @@
     <button onclick="send()">Send</button>
   </div>
 
-  <button class="exit" onclick="exitChat()">Exit</button>
+</div>
 
+<div class="popup" id="popup">
+  <div>Continue chatting?</div>
+  <button onclick="continueChat()">Continue</button>
+  <button onclick="next()">Next</button>
 </div>
 
 <script src="script.js"></script>

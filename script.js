@@ -1,4 +1,7 @@
-const socket = io(window.location.origin);
+const socket = io();
+
+let time = 120;
+let interval;
 
 function setStatus(text) {
   document.getElementById("status").innerText = text;
@@ -9,18 +12,29 @@ function addMsg(text, type) {
   div.classList.add("msg");
 
   if (type === "you") div.classList.add("you");
-  else if (type === "stranger") div.classList.add("stranger");
-  else div.classList.add("system");
+  else div.classList.add("stranger");
 
   div.innerText = text;
   document.getElementById("chat").appendChild(div);
-
-  const chat = document.getElementById("chat");
-  chat.scrollTop = chat.scrollHeight;
 }
 
 function clearChat() {
   document.getElementById("chat").innerHTML = "";
+}
+
+function startTimer() {
+  clearInterval(interval);
+  time = 120;
+
+  interval = setInterval(() => {
+    time--;
+    document.getElementById("timer").innerText = Math.floor(time / 60) + ":" + (time % 60).toString().padStart(2, "0");
+
+    if (time <= 0) {
+      clearInterval(interval);
+      document.getElementById("popup").style.display = "block";
+    }
+  }, 1000);
 }
 
 socket.on("connect", () => {
@@ -29,8 +43,9 @@ socket.on("connect", () => {
 
 socket.on("startChat", () => {
   clearChat();
-  setStatus("Connected. Make it count.");
-  addMsg("You are now connected", "system");
+  setStatus("Connected");
+  document.getElementById("popup").style.display = "none";
+  startTimer();
 });
 
 socket.on("message", (msg) => {
@@ -38,14 +53,15 @@ socket.on("message", (msg) => {
 });
 
 socket.on("endChat", () => {
+  clearChat();
   setStatus("Finding someone...");
-  addMsg("No match. Rizz again.", "system");
   socket.emit("nextUser");
 });
 
 function send() {
   const input = document.getElementById("msg");
-  const msg = input.value.trim();
+  const msg = input.value;
+
   if (!msg) return;
 
   socket.emit("message", msg);
@@ -53,6 +69,14 @@ function send() {
   input.value = "";
 }
 
-function exitChat() {
-  location.reload();
+function next() {
+  document.getElementById("popup").style.display = "none";
+  clearChat();
+  setStatus("Finding someone...");
+  socket.emit("nextUser");
+}
+
+function continueChat() {
+  document.getElementById("popup").style.display = "none";
+  startTimer();
 }

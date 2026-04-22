@@ -11,8 +11,6 @@ app.use(express.static(__dirname));
 let waitingUser = null;
 
 io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
-
   if (waitingUser && waitingUser.id !== socket.id) {
     const room = waitingUser.id + "-" + socket.id;
 
@@ -22,8 +20,7 @@ io.on("connection", (socket) => {
     socket.room = room;
     waitingUser.room = room;
 
-    socket.emit("startChat");
-    waitingUser.emit("startChat");
+    io.to(room).emit("startChat");
 
     waitingUser = null;
   } else {
@@ -38,8 +35,8 @@ io.on("connection", (socket) => {
 
   socket.on("nextUser", () => {
     if (socket.room) {
-      socket.leave(socket.room);
       socket.to(socket.room).emit("endChat");
+      socket.leave(socket.room);
     }
 
     socket.room = null;
@@ -53,8 +50,7 @@ io.on("connection", (socket) => {
       socket.room = room;
       waitingUser.room = room;
 
-      socket.emit("startChat");
-      waitingUser.emit("startChat");
+      io.to(room).emit("startChat");
 
       waitingUser = null;
     } else {
@@ -63,9 +59,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    if (waitingUser === socket) {
-      waitingUser = null;
-    }
+    if (waitingUser === socket) waitingUser = null;
 
     if (socket.room) {
       socket.to(socket.room).emit("endChat");
@@ -73,6 +67,4 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(process.env.PORT || 3000, () => {
-  console.log("Server running...");
-});
+server.listen(process.env.PORT || 3000);
