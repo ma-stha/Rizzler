@@ -1,108 +1,100 @@
 const socket = io();
 
 let time = 120;
-let interval = null;
+let interval;
 
-function setStatus(text) {
-  document.getElementById("status").innerText = text;
+function setStatus(t){
+  document.getElementById("status").innerText = t;
 }
 
-function addMsg(text, type) {
-  const div = document.createElement("div");
-  div.classList.add("msg");
+function addMsg(t,type){
+  const d = document.createElement("div");
+  d.classList.add("msg");
 
-  if (type === "you") div.classList.add("you");
-  else div.classList.add("stranger");
+  if(type==="you") d.classList.add("you");
+  else if(type==="system") d.classList.add("system");
+  else d.classList.add("stranger");
 
-  div.innerText = text;
-  document.getElementById("chat").appendChild(div);
-
-  const chat = document.getElementById("chat");
+  d.innerText = t;
+  chat.appendChild(d);
   chat.scrollTop = chat.scrollHeight;
 }
 
-function clearChat() {
-  document.getElementById("chat").innerHTML = "";
-}
-
-/* ✅ STOP TIMER (IMPORTANT FIX) */
-function stopTimer() {
+function stopTimer(){
   clearInterval(interval);
   interval = null;
-  document.getElementById("timer").innerText = "";
+  timer.innerText = "";
 }
 
-/* ✅ START TIMER */
-function startTimer() {
-  stopTimer(); // safety
-
+function startTimer(){
+  stopTimer();
   time = 120;
 
-  interval = setInterval(() => {
+  interval = setInterval(()=>{
     time--;
 
-    const min = Math.floor(time / 60);
-    const sec = (time % 60).toString().padStart(2, "0");
+    timer.innerText = `${Math.floor(time/60)}:${(time%60).toString().padStart(2,"0")}`;
 
-    document.getElementById("timer").innerText = `${min}:${sec}`;
+    if(time <= 10) timer.classList.add("red");
 
-    if (time <= 0) {
-      clearInterval(interval);
-      interval = null;
-
-      document.getElementById("popup").style.display = "block";
+    if(time <= 0){
+      stopTimer();
+      popup.style.display = "block";
     }
-  }, 1000);
+  },1000);
 }
 
-/* SOCKET EVENTS */
-
-socket.on("connect", () => {
-  stopTimer(); // ✅ important
-  setStatus("Finding someone...");
-});
-
-socket.on("startChat", () => {
-  clearChat();
+socket.on("startChat",()=>{
+  chat.innerHTML = "";
   setStatus("Connected. Make it count.");
-  document.getElementById("popup").style.display = "none";
+  popup.style.display = "none";
+  timer.classList.remove("red");
   startTimer();
 });
 
-socket.on("message", (msg) => {
-  addMsg(msg, "stranger");
+socket.on("message",(m)=>addMsg(m,"stranger"));
+
+socket.on("typing",()=>{
+  setStatus("typing...");
+  setTimeout(()=>setStatus("Connected. Make it count."),1000);
 });
 
-/* ✅ FIX HERE */
-socket.on("endChat", () => {
-  stopTimer(); // 🔥 THIS FIXES YOUR BUG
-  clearChat();
-  setStatus("Finding someone...");
-  socket.emit("nextUser");
+socket.on("endChat",()=>{
+  stopTimer();
+  addMsg("Stranger left...","system");
+
+  setTimeout(()=>{
+    chat.innerHTML = "";
+    setStatus("Finding someone...");
+    socket.emit("nextUser");
+  },1500);
 });
 
-/* ACTIONS */
-
-function send() {
-  const input = document.getElementById("msg");
-  const msg = input.value.trim();
-
-  if (!msg) return;
-
-  socket.emit("message", msg);
-  addMsg(msg, "you");
-
-  input.value = "";
-}
-
-function next() {
-  stopTimer(); // 🔥 ALSO STOP HERE
-  clearChat();
-  setStatus("Finding someone...");
-  socket.emit("nextUser");
-}
-
-function continueChat() {
-  document.getElementById("popup").style.display = "none";
+socket.on("continueApproved",()=>{
+  popup.style.display = "none";
   startTimer();
+});
+
+function send(){
+  const m = msg.value.trim();
+  if(!m) return;
+
+  socket.emit("message", m);
+  addMsg(m,"you");
+  msg.value = "";
+}
+
+function typing(){
+  socket.emit("typing");
+}
+
+function next(){
+  stopTimer();
+  chat.innerHTML = "";
+  setStatus("Finding someone...");
+  socket.emit("nextUser");
+}
+
+function continueChat(){
+  socket.emit("continueChat");
 }

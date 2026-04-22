@@ -11,6 +11,7 @@ app.use(express.static(__dirname));
 let waitingUser = null;
 
 io.on("connection", (socket) => {
+
   if (waitingUser && waitingUser.id !== socket.id) {
     const room = waitingUser.id + "-" + socket.id;
 
@@ -20,6 +21,9 @@ io.on("connection", (socket) => {
     socket.room = room;
     waitingUser.room = room;
 
+    socket.continue = false;
+    waitingUser.continue = false;
+
     io.to(room).emit("startChat");
 
     waitingUser = null;
@@ -27,9 +31,34 @@ io.on("connection", (socket) => {
     waitingUser = socket;
   }
 
+  socket.on("typing", () => {
+    if (socket.room) socket.to(socket.room).emit("typing");
+  });
+
   socket.on("message", (msg) => {
     if (socket.room) {
       socket.to(socket.room).emit("message", msg);
+    }
+  });
+
+  socket.on("continueChat", () => {
+    socket.continue = true;
+
+    const room = socket.room;
+    if (!room) return;
+
+    const clients = io.sockets.adapter.rooms.get(room);
+    if (!clients) return;
+
+    let bothReady = true;
+
+    clients.forEach(id => {
+      const s = io.sockets.sockets.get(id);
+      if (!s.continue) bothReady = false;
+    });
+
+    if (bothReady) {
+      io.to(room).emit("continueApproved");
     }
   });
 
@@ -40,6 +69,7 @@ io.on("connection", (socket) => {
     }
 
     socket.room = null;
+    socket.continue = false;
 
     if (waitingUser && waitingUser.id !== socket.id) {
       const room = waitingUser.id + "-" + socket.id;
@@ -49,6 +79,9 @@ io.on("connection", (socket) => {
 
       socket.room = room;
       waitingUser.room = room;
+
+      socket.continue = false;
+      waitingUser.continue = false;
 
       io.to(room).emit("startChat");
 
@@ -65,6 +98,7 @@ io.on("connection", (socket) => {
       socket.to(socket.room).emit("endChat");
     }
   });
+
 });
 
 server.listen(process.env.PORT || 3000);
