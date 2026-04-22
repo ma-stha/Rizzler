@@ -11,10 +11,9 @@
       font-family: -apple-system;
       background: #0b0615;
       color: white;
+      height: 100vh;
       display: flex;
       justify-content: center;
-      align-items: center;
-      height: 100vh;
     }
 
     .app {
@@ -27,13 +26,27 @@
 
     .header {
       text-align: center;
-      padding: 10px;
+      padding: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
     }
 
+    .logo {
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .status {
+      opacity: 0.6;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    /* ✅ TIMER ON TOP */
     .timer {
+      margin-top: 6px;
       color: #7b4bff;
-      font-size: 20px;
-      margin-top: 5px;
+      font-weight: bold;
+      font-size: 16px;
     }
 
     .chat {
@@ -49,6 +62,7 @@
       margin: 4px 0;
       border-radius: 14px;
       max-width: 70%;
+      font-size: 14px;
     }
 
     .you {
@@ -64,6 +78,7 @@
     .input-area {
       display: flex;
       padding: 10px;
+      border-top: 1px solid rgba(255,255,255,0.05);
     }
 
     input {
@@ -72,15 +87,28 @@
       font-size: 16px;
       border-radius: 10px;
       border: none;
+      outline: none;
     }
 
-    button {
-      margin-left: 5px;
-      padding: 10px;
+    .send-btn {
+      margin-left: 6px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: none;
       background: #7b4bff;
       color: white;
+    }
+
+    /* ✅ EXIT LIKE BEFORE */
+    .exit {
+      margin: 10px;
+      padding: 14px;
+      border-radius: 12px;
       border: none;
-      border-radius: 10px;
+      background: rgba(255,0,0,0.6);
+      color: white;
+      font-weight: bold;
+      width: calc(100% - 20px);
     }
 
     .popup {
@@ -98,6 +126,7 @@
     .popup button {
       margin: 10px;
     }
+
   </style>
 </head>
 
@@ -106,17 +135,19 @@
 <div class="app">
 
   <div class="header">
-    <div>🔥 Rizzler</div>
-    <div id="status">Finding someone...</div>
-    <div class="timer" id="timer"></div>
+    <div class="logo">🔥 Rizzler</div>
+    <div class="status" id="status">Finding someone...</div>
+    <div class="timer" id="timer">2:00</div>
   </div>
 
   <div class="chat" id="chat"></div>
 
   <div class="input-area">
     <input id="msg" placeholder="Type..." />
-    <button onclick="send()">Send</button>
+    <button class="send-btn" onclick="send()">Send</button>
   </div>
+
+  <button class="exit" onclick="next()">Exit</button>
 
 </div>
 
