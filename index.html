@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Rizzler</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <script src="/socket.io/socket.io.js"></script>
 
   <style>
@@ -15,24 +15,22 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
+      overflow: hidden;
     }
 
     .app {
       width: 100%;
       max-width: 420px;
-      height: 90vh;
-      background: rgba(20,15,30,0.9);
+      height: 100vh;
+      background: rgba(20,15,30,0.95);
       backdrop-filter: blur(20px);
-      border-radius: 20px;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
-      box-shadow: 0 0 40px rgba(140,80,255,0.2);
     }
 
     .header {
       text-align: center;
-      padding: 12px;
+      padding: 14px;
       border-bottom: 1px solid rgba(255,255,255,0.05);
     }
 
@@ -45,7 +43,7 @@
     }
 
     .status {
-      font-size: 12px;
+      font-size: 13px;
       opacity: 0.6;
       margin-top: 4px;
     }
@@ -64,7 +62,6 @@
       border-radius: 14px;
       max-width: 70%;
       font-size: 14px;
-      word-wrap: break-word;
     }
 
     .you {
@@ -91,18 +88,19 @@
 
     input {
       flex: 1;
-      padding: 10px;
-      border-radius: 10px;
+      padding: 12px;
+      border-radius: 12px;
       border: none;
       outline: none;
       background: rgba(255,255,255,0.08);
       color: white;
+      font-size: 16px; /* FIXES ZOOM */
     }
 
     button {
       margin-left: 6px;
       padding: 10px 14px;
-      border-radius: 10px;
+      border-radius: 12px;
       border: none;
       cursor: pointer;
       background: linear-gradient(135deg, #8c52ff, #5f2bff);
@@ -112,7 +110,12 @@
 
     .exit {
       margin: 10px;
-      background: rgba(255,0,0,0.25);
+      padding: 12px;
+      border-radius: 12px;
+      border: none;
+      background: rgba(255,0,0,0.3);
+      color: white;
+      font-weight: 600;
     }
   </style>
 </head>

@@ -13,7 +13,6 @@ let waitingUser = null;
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
-  // MATCH USERS
   if (waitingUser && waitingUser.id !== socket.id) {
     const room = waitingUser.id + "-" + socket.id;
 
@@ -31,14 +30,12 @@ io.on("connection", (socket) => {
     waitingUser = socket;
   }
 
-  // MESSAGE
   socket.on("message", (msg) => {
     if (socket.room) {
       socket.to(socket.room).emit("message", msg);
     }
   });
 
-  // NEXT USER
   socket.on("nextUser", () => {
     if (socket.room) {
       socket.leave(socket.room);
@@ -65,10 +62,7 @@ io.on("connection", (socket) => {
     }
   });
 
-  // DISCONNECT
   socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
-
     if (waitingUser === socket) {
       waitingUser = null;
     }

@@ -25,13 +25,12 @@ function clearChat() {
 
 socket.on("connect", () => {
   setStatus("Finding someone...");
-  addMsg("Looking for someone...", "system");
 });
 
 socket.on("startChat", () => {
   clearChat();
   setStatus("Connected. Make it count.");
-  addMsg("Connected! Start chatting", "system");
+  addMsg("You are now connected", "system");
 });
 
 socket.on("message", (msg) => {
