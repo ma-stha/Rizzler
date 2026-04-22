@@ -6,6 +6,12 @@
   <script src="/socket.io/socket.io.js"></script>
 
   <style>
+    .logo-img {
+  width: 160px;
+  margin: 10px auto;
+  display: block;
+  filter: drop-shadow(0 0 12px rgba(123,75,255,0.6));
+}
     body {
       margin: 0;
       font-family: -apple-system;
@@ -112,7 +118,7 @@
 <div class="app">
 
   <div class="header">
-    🔥 Rizzler  
+   <img src="logo.png" class="logo-img"> 
     <div id="status">Finding someone...</div>
     <div id="timer" class="timer"></div>
   </div>
