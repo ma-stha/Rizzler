@@ -4,15 +4,13 @@ let timerInt;
 let time = 120;
 let typingEl;
 
-function startApp(){
-  landing.style.display = "none";
-}
-
 function setStatus(t){
-  status.innerText = t;
+  document.getElementById("status").innerText = t;
 }
 
 function addMsg(t,type){
+  const chat = document.getElementById("chat");
+
   const d = document.createElement("div");
   d.classList.add("msg");
 
@@ -31,30 +29,32 @@ function startTimer(){
 
   timerInt = setInterval(()=>{
     time--;
-    timer.innerText = time;
+    document.getElementById("timer").innerText = time;
 
     if(time <= 0){
       clearInterval(timerInt);
-      popup.style.display = "block";
+      document.getElementById("popup").style.display = "block";
     }
   },1000);
 }
 
 function stopTimer(){
   clearInterval(timerInt);
-  timer.innerText = "";
+  document.getElementById("timer").innerText = "";
 }
 
 socket.on("startChat",()=>{
-  chat.innerHTML="";
+  document.getElementById("chat").innerHTML = "";
   setStatus("Connected. Make it count.");
-  popup.style.display="none";
+  document.getElementById("popup").style.display = "none";
   startTimer();
 });
 
 socket.on("message",(m)=>addMsg(m,"stranger"));
 
 socket.on("typing",()=>{
+  const chat = document.getElementById("chat");
+
   if (typingEl) typingEl.remove();
 
   typingEl = document.createElement("div");
@@ -75,26 +75,28 @@ socket.on("endChat",()=>{
   addMsg("Stranger left","system");
 
   setTimeout(()=>{
-    chat.innerHTML="";
+    document.getElementById("chat").innerHTML="";
     setStatus("Finding someone...");
     socket.emit("nextUser");
-  },1000);
+  },800);
 });
 
 socket.on("continueApproved",()=>{
-  popup.style.display="none";
+  document.getElementById("popup").style.display="none";
   stopTimer();
   addMsg("🔓 Connection unlocked","system");
   setStatus("Unlocked — keep talking");
 });
 
 function send(){
-  const m = msg.value;
+  const input = document.getElementById("msg");
+  const m = input.value;
+
   if(!m) return;
 
   socket.emit("message",m);
   addMsg(m,"you");
-  msg.value="";
+  input.value="";
 }
 
 function typing(){
@@ -103,7 +105,7 @@ function typing(){
 
 function next(){
   stopTimer();
-  chat.innerHTML="";
+  document.getElementById("chat").innerHTML="";
   setStatus("Finding someone...");
   socket.emit("nextUser");
 }
