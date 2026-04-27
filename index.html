@@ -3,8 +3,7 @@
 <head>
   <title>Rizzler</title>
 
-  <!-- 🔥 THIS FIXES iPhone ZOOM -->
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
   <script src="/socket.io/socket.io.js"></script>
 
@@ -35,7 +34,7 @@
 
     .header img {
       width: 110px;
-      margin-bottom: 5px;
+      margin-bottom: 6px;
     }
 
     #status {
@@ -44,9 +43,9 @@
     }
 
     #timer {
-      font-size: 13px;
+      font-size: 14px;
+      margin-top: 4px;
       color: #a970ff;
-      margin-top: 2px;
     }
 
     .chat {
@@ -60,7 +59,7 @@
     .msg {
       padding: 10px 12px;
       border-radius: 14px;
-      margin: 5px 0;
+      margin: 4px 0;
       max-width: 70%;
       font-size: 15px;
     }
@@ -77,7 +76,7 @@
 
     .system {
       text-align: center;
-      opacity: 0.5;
+      opacity: 0.6;
       font-size: 13px;
     }
 
@@ -92,9 +91,7 @@
       padding: 12px;
       border-radius: 10px;
       border: none;
-
-      /* 🔥 THIS FIXES iOS ZOOM */
-      font-size: 16px;
+      font-size: 16px; /* 🔥 fixes iPhone zoom */
     }
 
     button {

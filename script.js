@@ -2,7 +2,7 @@ const socket = io();
 
 let timerInt;
 let time = 120;
-let typingEl;
+let isTyping = false;
 
 function setStatus(t){
   document.getElementById("status").innerText = t;
@@ -29,12 +29,20 @@ function startTimer(){
 
   timerInt = setInterval(()=>{
     time--;
-    document.getElementById("timer").innerText = time;
+
+    const timerEl = document.getElementById("timer");
+    timerEl.innerText = time + "s";
+
+    // 🔥 turn red when low
+    if(time <= 20){
+      timerEl.style.color = "#ff3b3b";
+    }
 
     if(time <= 0){
       clearInterval(timerInt);
       document.getElementById("popup").style.display = "block";
     }
+
   },1000);
 }
 
@@ -44,30 +52,25 @@ function stopTimer(){
 }
 
 socket.on("startChat",()=>{
-  document.getElementById("chat").innerHTML = "";
+  document.getElementById("chat").innerHTML="";
   setStatus("Connected. Make it count.");
-  document.getElementById("popup").style.display = "none";
+  document.getElementById("popup").style.display="none";
   startTimer();
 });
 
 socket.on("message",(m)=>addMsg(m,"stranger"));
 
+/* 🔥 FIXED typing (NO flicker now) */
 socket.on("typing",()=>{
-  const chat = document.getElementById("chat");
+  if(isTyping) return;
 
-  if (typingEl) typingEl.remove();
-
-  typingEl = document.createElement("div");
-  typingEl.classList.add("msg","stranger");
-  typingEl.style.opacity = "0.6";
-  typingEl.innerText = "typing...";
-
-  chat.appendChild(typingEl);
-  chat.scrollTop = chat.scrollHeight;
+  isTyping = true;
+  setStatus("typing...");
 
   setTimeout(()=>{
-    if (typingEl) typingEl.remove();
-  },1000);
+    setStatus("Connected. Make it count.");
+    isTyping = false;
+  },800);
 });
 
 socket.on("endChat",()=>{
