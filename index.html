@@ -2,20 +2,15 @@
 <html>
 <head>
   <title>Rizzler</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
   <script src="/socket.io/socket.io.js"></script>
 
   <style>
-    .logo-img {
-  width: 160px;
-  margin: 10px auto;
-  display: block;
-  filter: drop-shadow(0 0 12px rgba(123,75,255,0.6));
-}
     body {
       margin: 0;
-      font-family: -apple-system;
-      background: #0b0615;
+      font-family: -apple-system, sans-serif;
+      background: radial-gradient(circle at top, #140c2a, #0b0615);
       color: white;
       display: flex;
       justify-content: center;
@@ -25,20 +20,52 @@
     .app {
       width: 100%;
       max-width: 420px;
+      height: 100vh;
       display: flex;
       flex-direction: column;
-      height: 100vh;
+      position: relative;
+    }
+
+    /* 🔥 LANDING */
+    .landing {
+      position: absolute;
+      inset: 0;
+      background: #0b0615;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .start-btn {
+      margin-top: 20px;
+      padding: 14px 24px;
+      border-radius: 12px;
+      background: #7b4bff;
+      border: none;
+      color: white;
+      font-size: 16px;
+    }
+
+    .logo-img {
+      width: 150px;
+      filter: drop-shadow(0 0 12px rgba(123,75,255,0.6));
     }
 
     .header {
       text-align: center;
-      padding: 10px;
+      padding: 12px;
+    }
+
+    .status {
+      font-size: 13px;
+      opacity: 0.7;
     }
 
     .timer {
       color: #7b4bff;
       font-weight: bold;
-      transition: 0.3s;
     }
 
     .timer.red {
@@ -57,17 +84,28 @@
     .msg {
       padding: 8px 12px;
       margin: 4px 0;
-      border-radius: 12px;
+      border-radius: 14px;
       max-width: 70%;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .you { background: #7b4bff; align-self: flex-end; }
-    .stranger { background: #333; align-self: flex-start; }
+    .stranger { background: #2a2a2a; align-self: flex-start; }
 
     .system {
       text-align: center;
-      opacity: 0.5;
       font-size: 12px;
+      opacity: 0.5;
+    }
+
+    .typing {
+      font-size: 12px;
+      opacity: 0.6;
     }
 
     .input-area {
@@ -78,14 +116,15 @@
     input {
       flex: 1;
       padding: 12px;
-      font-size: 16px;
       border-radius: 10px;
       border: none;
+      background: #1c1c2a;
+      color: white;
     }
 
     button {
-      margin-left: 5px;
-      padding: 10px;
+      margin-left: 6px;
+      padding: 12px;
       border-radius: 10px;
       border: none;
       background: #7b4bff;
@@ -96,7 +135,6 @@
       margin: 10px;
       padding: 14px;
       background: red;
-      border: none;
       border-radius: 10px;
       width: calc(100% - 20px);
     }
@@ -108,7 +146,9 @@
       transform: translate(-50%, -50%);
       background: #111;
       padding: 20px;
+      border-radius: 10px;
       display: none;
+      text-align: center;
     }
   </style>
 </head>
@@ -117,16 +157,22 @@
 
 <div class="app">
 
+  <!-- 🔥 LANDING -->
+  <div class="landing" id="landing">
+    <img src="logo.png" class="logo-img">
+    <div style="margin-top:10px;opacity:0.7;">Rizz for Real Connection</div>
+    <button class="start-btn" onclick="startApp()">Start Chat</button>
+  </div>
+
   <div class="header">
-   <img src="logo.png" class="logo-img"> 
-    <div id="status">Finding someone...</div>
+    <div id="status" class="status">Finding someone...</div>
     <div id="timer" class="timer"></div>
   </div>
 
-  <div class="chat" id="chat"></div>
+  <div id="chat" class="chat"></div>
 
   <div class="input-area">
-    <input id="msg" placeholder="Type..." oninput="typing()" />
+    <input id="msg" placeholder="Say something interesting..." oninput="typing()">
     <button onclick="send()">Send</button>
   </div>
 
@@ -134,9 +180,9 @@
 
 </div>
 
-<div class="popup" id="popup">
-  Continue?
-  <button onclick="continueChat()">Yes</button>
+<div id="popup" class="popup">
+  Continue chatting?<br><br>
+  <button onclick="continueChat()">Continue</button>
   <button onclick="next()">Next</button>
 </div>
 
