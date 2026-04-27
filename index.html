@@ -5,18 +5,20 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
+  <!-- 🔥 preload logo -->
+  <link rel="preload" as="image" href="logo.png">
+
   <script src="/socket.io/socket.io.js"></script>
 
   <style>
     body {
       margin: 0;
-      font-family: -apple-system, sans-serif;
+      font-family: -apple-system;
       background: radial-gradient(circle, #140c2a, #0b0615);
       color: white;
       display: flex;
       justify-content: center;
       height: 100vh;
-      overflow: hidden;
     }
 
     .app {
@@ -34,7 +36,6 @@
 
     .header img {
       width: 110px;
-      margin-bottom: 6px;
     }
 
     #status {
@@ -57,28 +58,15 @@
     }
 
     .msg {
-      padding: 10px 12px;
+      padding: 10px;
       border-radius: 14px;
       margin: 4px 0;
       max-width: 70%;
-      font-size: 15px;
     }
 
-    .you {
-      background: #7b4bff;
-      align-self: flex-end;
-    }
-
-    .stranger {
-      background: #2a2a2a;
-      align-self: flex-start;
-    }
-
-    .system {
-      text-align: center;
-      opacity: 0.6;
-      font-size: 13px;
-    }
+    .you { background: #7b4bff; align-self: flex-end; }
+    .stranger { background: #2a2a2a; }
+    .system { text-align: center; opacity: 0.6; }
 
     .input-area {
       display: flex;
@@ -91,11 +79,11 @@
       padding: 12px;
       border-radius: 10px;
       border: none;
-      font-size: 16px; /* 🔥 fixes iPhone zoom */
+      font-size: 16px;
     }
 
     button {
-      padding: 12px 14px;
+      padding: 12px;
       border-radius: 10px;
       border: none;
       background: #7b4bff;
@@ -104,9 +92,8 @@
 
     .exit {
       margin: 10px;
-      background: #ff2a2a;
+      background: red;
       padding: 14px;
-      border-radius: 12px;
     }
   </style>
 </head>
@@ -132,9 +119,8 @@
 
 </div>
 
-<div id="popup" style="display:none; position:absolute; top:40%; left:50%; transform:translate(-50%,-50%); background:#111; padding:20px; border-radius:10px;">
+<div id="popup" style="display:none; position:absolute; top:40%; left:50%; transform:translate(-50%,-50%); background:#111; padding:20px;">
   Continue?
-  <br><br>
   <button onclick="continueChat()">Yes</button>
   <button onclick="next()">Next</button>
 </div>

@@ -7,10 +7,8 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// 🔥 serve files from SAME folder
 app.use(express.static(__dirname));
 
-// 🔥 fix "Cannot GET /"
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
@@ -29,7 +27,6 @@ io.on("connection", (socket) => {
 
     rooms[socket.id] = room;
     rooms[waitingUser.id] = room;
-
     continueVotes[room] = [];
 
     socket.emit("startChat");
@@ -70,7 +67,6 @@ io.on("connection", (socket) => {
 
       rooms[socket.id] = room;
       rooms[waitingUser.id] = room;
-
       continueVotes[room] = [];
 
       socket.emit("startChat");
