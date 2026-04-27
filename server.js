@@ -15,27 +15,32 @@ app.get("/", (req, res) => {
 
 let waitingUser = null;
 let rooms = {};
-let continueVotes = {};
+let continueVotes = {}; // room -> Set()
 
 io.on("connection", (socket) => {
 
-  if (waitingUser) {
-    const room = socket.id + "#" + waitingUser.id;
+  function matchUser() {
+    if (waitingUser && waitingUser.id !== socket.id) {
+      const room = socket.id + "#" + waitingUser.id;
 
-    socket.join(room);
-    waitingUser.join(room);
+      socket.join(room);
+      waitingUser.join(room);
 
-    rooms[socket.id] = room;
-    rooms[waitingUser.id] = room;
-    continueVotes[room] = [];
+      rooms[socket.id] = room;
+      rooms[waitingUser.id] = room;
 
-    socket.emit("startChat");
-    waitingUser.emit("startChat");
+      continueVotes[room] = new Set(); // ✅ FIX
 
-    waitingUser = null;
-  } else {
-    waitingUser = socket;
+      socket.emit("startChat");
+      waitingUser.emit("startChat");
+
+      waitingUser = null;
+    } else {
+      waitingUser = socket;
+    }
   }
+
+  matchUser();
 
   socket.on("message", (msg) => {
     const room = rooms[socket.id];
@@ -56,33 +61,17 @@ io.on("connection", (socket) => {
     }
 
     delete rooms[socket.id];
-
-    if (!waitingUser) {
-      waitingUser = socket;
-    } else {
-      const room = socket.id + "#" + waitingUser.id;
-
-      socket.join(room);
-      waitingUser.join(room);
-
-      rooms[socket.id] = room;
-      rooms[waitingUser.id] = room;
-      continueVotes[room] = [];
-
-      socket.emit("startChat");
-      waitingUser.emit("startChat");
-
-      waitingUser = null;
-    }
+    matchUser();
   });
 
   socket.on("continueChat", () => {
     const room = rooms[socket.id];
     if (!room) return;
 
-    continueVotes[room].push(socket.id);
+    // ✅ FIX: prevent duplicate vote
+    continueVotes[room].add(socket.id);
 
-    if (continueVotes[room].length === 2) {
+    if (continueVotes[room].size === 2) {
       io.to(room).emit("continueApproved");
       delete continueVotes[room];
     }

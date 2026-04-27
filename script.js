@@ -2,7 +2,7 @@ const socket = io();
 
 let timerInt;
 let time = 120;
-let isTyping = false;
+let isConnected = false;
 
 function setStatus(t){
   status.innerText = t;
@@ -44,56 +44,60 @@ function stopTimer(){
 }
 
 socket.on("startChat",()=>{
+  isConnected = true;
   chat.innerHTML="";
   setStatus("Connected. Make it count.");
   popup.style.display="none";
   startTimer();
 });
 
-socket.on("message",(m)=>addMsg(m,"stranger"));
+socket.on("message",(m)=>{
+  if(isConnected) addMsg(m,"stranger");
+});
 
 socket.on("typing",()=>{
-  if(isTyping) return;
+  if(!isConnected) return;
 
-  isTyping = true;
   setStatus("typing...");
-
   setTimeout(()=>{
-    setStatus("Connected. Make it count.");
-    isTyping = false;
-  },800);
+    if(isConnected){
+      setStatus("Connected. Make it count.");
+    }
+  },600);
 });
 
 socket.on("endChat",()=>{
+  isConnected = false;
   stopTimer();
   addMsg("Stranger left","system");
 
   setTimeout(()=>{
     chat.innerHTML="";
     setStatus("Finding someone...");
-    // ❌ NO AUTO nextUser (fixes loop)
   },800);
 });
 
 socket.on("continueApproved",()=>{
   popup.style.display="none";
   stopTimer();
-  addMsg("🔓 Connection unlocked","system");
   setStatus("Unlocked — keep talking");
 });
 
 function send(){
-  if(!msg.value) return;
+  if(!msg.value || !isConnected) return;
   socket.emit("message",msg.value);
   addMsg(msg.value,"you");
   msg.value="";
 }
 
 function typing(){
-  socket.emit("typing");
+  if(isConnected){
+    socket.emit("typing");
+  }
 }
 
 function next(){
+  isConnected = false;
   stopTimer();
   chat.innerHTML="";
   setStatus("Finding someone...");
