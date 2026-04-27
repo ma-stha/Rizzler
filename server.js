@@ -1,15 +1,23 @@
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
+const path = require("path");
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.use(express.static("public"));
+// 🔥 serve files from SAME folder
+app.use(express.static(__dirname));
+
+// 🔥 fix "Cannot GET /"
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
 
 let waitingUser = null;
 let rooms = {};
+let continueVotes = {};
 
 io.on("connection", (socket) => {
 
@@ -21,6 +29,8 @@ io.on("connection", (socket) => {
 
     rooms[socket.id] = room;
     rooms[waitingUser.id] = room;
+
+    continueVotes[room] = [];
 
     socket.emit("startChat");
     waitingUser.emit("startChat");
@@ -42,8 +52,10 @@ io.on("connection", (socket) => {
 
   socket.on("nextUser", () => {
     const room = rooms[socket.id];
+
     if (room) {
       socket.to(room).emit("endChat");
+      delete continueVotes[room];
     }
 
     delete rooms[socket.id];
@@ -59,6 +71,8 @@ io.on("connection", (socket) => {
       rooms[socket.id] = room;
       rooms[waitingUser.id] = room;
 
+      continueVotes[room] = [];
+
       socket.emit("startChat");
       waitingUser.emit("startChat");
 
@@ -70,18 +84,21 @@ io.on("connection", (socket) => {
     const room = rooms[socket.id];
     if (!room) return;
 
-    if (!rooms[room]) rooms[room] = [];
-    rooms[room].push(socket.id);
+    continueVotes[room].push(socket.id);
 
-    if (rooms[room].length === 2) {
+    if (continueVotes[room].length === 2) {
       io.to(room).emit("continueApproved");
-      rooms[room] = [];
+      delete continueVotes[room];
     }
   });
 
   socket.on("disconnect", () => {
     const room = rooms[socket.id];
-    if (room) socket.to(room).emit("endChat");
+
+    if (room) {
+      socket.to(room).emit("endChat");
+      delete continueVotes[room];
+    }
 
     if (waitingUser === socket) waitingUser = null;
     delete rooms[socket.id];
