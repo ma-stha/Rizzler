@@ -2,15 +2,15 @@
 <html>
 <head>
   <title>Rizzler</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <script src="/socket.io/socket.io.js"></script>
 
   <style>
     body {
       margin: 0;
-      font-family: -apple-system, sans-serif;
-      background: radial-gradient(circle at top, #140c2a, #0b0615);
+      font-family: -apple-system;
+      background: radial-gradient(circle, #140c2a, #0b0615);
       color: white;
       display: flex;
       justify-content: center;
@@ -20,13 +20,10 @@
     .app {
       width: 100%;
       max-width: 420px;
-      height: 100vh;
       display: flex;
       flex-direction: column;
-      position: relative;
     }
 
-    /* 🔥 LANDING */
     .landing {
       position: absolute;
       inset: 0;
@@ -35,42 +32,17 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      z-index: 10;
     }
 
-    .start-btn {
-      margin-top: 20px;
-      padding: 14px 24px;
-      border-radius: 12px;
-      background: #7b4bff;
-      border: none;
-      color: white;
-      font-size: 16px;
-    }
-
-    .logo-img {
-      width: 150px;
-      filter: drop-shadow(0 0 12px rgba(123,75,255,0.6));
-    }
+    .landing img { width: 160px; }
 
     .header {
       text-align: center;
-      padding: 12px;
+      padding: 10px;
     }
 
-    .status {
-      font-size: 13px;
-      opacity: 0.7;
-    }
-
-    .timer {
-      color: #7b4bff;
-      font-weight: bold;
-    }
-
-    .timer.red {
-      color: red;
-      transform: scale(1.1);
+    .header img {
+      width: 100px;
     }
 
     .chat {
@@ -82,31 +54,15 @@
     }
 
     .msg {
-      padding: 8px 12px;
-      margin: 4px 0;
-      border-radius: 14px;
+      padding: 8px;
+      border-radius: 12px;
+      margin: 4px;
       max-width: 70%;
-      animation: fadeIn 0.2s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(5px); }
-      to { opacity: 1; transform: translateY(0); }
     }
 
     .you { background: #7b4bff; align-self: flex-end; }
     .stranger { background: #2a2a2a; align-self: flex-start; }
-
-    .system {
-      text-align: center;
-      font-size: 12px;
-      opacity: 0.5;
-    }
-
-    .typing {
-      font-size: 12px;
-      opacity: 0.6;
-    }
+    .system { text-align: center; opacity: 0.5; }
 
     .input-area {
       display: flex;
@@ -115,40 +71,23 @@
 
     input {
       flex: 1;
-      padding: 12px;
-      border-radius: 10px;
+      padding: 10px;
+      border-radius: 8px;
       border: none;
-      background: #1c1c2a;
-      color: white;
     }
 
     button {
-      margin-left: 6px;
-      padding: 12px;
-      border-radius: 10px;
-      border: none;
+      margin-left: 5px;
+      padding: 10px;
       background: #7b4bff;
+      border: none;
       color: white;
     }
 
     .exit {
       margin: 10px;
-      padding: 14px;
       background: red;
-      border-radius: 10px;
-      width: calc(100% - 20px);
-    }
-
-    .popup {
-      position: absolute;
-      top: 40%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #111;
-      padding: 20px;
-      border-radius: 10px;
-      display: none;
-      text-align: center;
+      padding: 12px;
     }
   </style>
 </head>
@@ -157,22 +96,21 @@
 
 <div class="app">
 
-  <!-- 🔥 LANDING -->
   <div class="landing" id="landing">
-    <img src="logo.png" class="logo-img">
-    <div style="margin-top:10px;opacity:0.7;">Rizz for Real Connection</div>
-    <button class="start-btn" onclick="startApp()">Start Chat</button>
+    <img src="logo.png">
+    <button onclick="startApp()">Start Chat</button>
   </div>
 
   <div class="header">
-    <div id="status" class="status">Finding someone...</div>
-    <div id="timer" class="timer"></div>
+    <img src="logo.png">
+    <div id="status">Finding someone...</div>
+    <div id="timer"></div>
   </div>
 
   <div id="chat" class="chat"></div>
 
   <div class="input-area">
-    <input id="msg" placeholder="Say something interesting..." oninput="typing()">
+    <input id="msg" oninput="typing()" placeholder="Say something...">
     <button onclick="send()">Send</button>
   </div>
 
@@ -180,9 +118,9 @@
 
 </div>
 
-<div id="popup" class="popup">
-  Continue chatting?<br><br>
-  <button onclick="continueChat()">Continue</button>
+<div id="popup" style="display:none;">
+  Continue?
+  <button onclick="continueChat()">Yes</button>
   <button onclick="next()">Next</button>
 </div>
 

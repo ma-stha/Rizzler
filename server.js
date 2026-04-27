@@ -6,97 +6,85 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.use(express.static(__dirname));
+app.use(express.static("public"));
 
 let waitingUser = null;
+let rooms = {};
 
 io.on("connection", (socket) => {
 
-  if (waitingUser && waitingUser.id !== socket.id) {
-    const room = waitingUser.id + "-" + socket.id;
+  if (waitingUser) {
+    const room = socket.id + "#" + waitingUser.id;
 
     socket.join(room);
     waitingUser.join(room);
 
-    socket.room = room;
-    waitingUser.room = room;
+    rooms[socket.id] = room;
+    rooms[waitingUser.id] = room;
 
-    socket.continue = false;
-    waitingUser.continue = false;
-
-    io.to(room).emit("startChat");
+    socket.emit("startChat");
+    waitingUser.emit("startChat");
 
     waitingUser = null;
   } else {
     waitingUser = socket;
   }
 
-  socket.on("typing", () => {
-    if (socket.room) socket.to(socket.room).emit("typing");
-  });
-
   socket.on("message", (msg) => {
-    if (socket.room) {
-      socket.to(socket.room).emit("message", msg);
-    }
+    const room = rooms[socket.id];
+    if (room) socket.to(room).emit("message", msg);
   });
 
-  socket.on("continueChat", () => {
-    socket.continue = true;
-
-    const room = socket.room;
-    if (!room) return;
-
-    const clients = io.sockets.adapter.rooms.get(room);
-    if (!clients) return;
-
-    let bothReady = true;
-
-    clients.forEach(id => {
-      const s = io.sockets.sockets.get(id);
-      if (!s.continue) bothReady = false;
-    });
-
-    if (bothReady) {
-      io.to(room).emit("continueApproved");
-    }
+  socket.on("typing", () => {
+    const room = rooms[socket.id];
+    if (room) socket.to(room).emit("typing");
   });
 
   socket.on("nextUser", () => {
-    if (socket.room) {
-      socket.to(socket.room).emit("endChat");
-      socket.leave(socket.room);
+    const room = rooms[socket.id];
+    if (room) {
+      socket.to(room).emit("endChat");
     }
 
-    socket.room = null;
-    socket.continue = false;
+    delete rooms[socket.id];
 
-    if (waitingUser && waitingUser.id !== socket.id) {
-      const room = waitingUser.id + "-" + socket.id;
+    if (!waitingUser) {
+      waitingUser = socket;
+    } else {
+      const room = socket.id + "#" + waitingUser.id;
 
       socket.join(room);
       waitingUser.join(room);
 
-      socket.room = room;
-      waitingUser.room = room;
+      rooms[socket.id] = room;
+      rooms[waitingUser.id] = room;
 
-      socket.continue = false;
-      waitingUser.continue = false;
-
-      io.to(room).emit("startChat");
+      socket.emit("startChat");
+      waitingUser.emit("startChat");
 
       waitingUser = null;
-    } else {
-      waitingUser = socket;
+    }
+  });
+
+  socket.on("continueChat", () => {
+    const room = rooms[socket.id];
+    if (!room) return;
+
+    if (!rooms[room]) rooms[room] = [];
+    rooms[room].push(socket.id);
+
+    if (rooms[room].length === 2) {
+      io.to(room).emit("continueApproved");
+      rooms[room] = [];
     }
   });
 
   socket.on("disconnect", () => {
-    if (waitingUser === socket) waitingUser = null;
+    const room = rooms[socket.id];
+    if (room) socket.to(room).emit("endChat");
 
-    if (socket.room) {
-      socket.to(socket.room).emit("endChat");
-    }
+    if (waitingUser === socket) waitingUser = null;
+    delete rooms[socket.id];
   });
 
 });
