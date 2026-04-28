@@ -7,13 +7,12 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
 
 let waitingUser = null;
 const rooms = {};
+let totalUsersOnline = 0; // NEW: Track online users
 
-// Matchmaking Logic
 function findMatch(socket) {
     if (waitingUser === socket) return;
     
@@ -26,10 +25,7 @@ function findMatch(socket) {
         socket.roomId = roomId;
         waitingUser.roomId = roomId;
 
-        rooms[roomId] = {
-            users: [socket.id, waitingUser.id],
-            votes: 0 
-        };
+        rooms[roomId] = { users: [socket.id, waitingUser.id], votes: 0 };
 
         io.to(roomId).emit('connected');
         waitingUser = null; 
@@ -39,8 +35,11 @@ function findMatch(socket) {
     }
 }
 
-// Socket Connection Handling
 io.on('connection', (socket) => {
+    // NEW: Update everyone when a new user joins
+    totalUsersOnline++;
+    io.emit('user count', totalUsersOnline);
+
     findMatch(socket);
 
     socket.on('chat message', (msg) => {
@@ -49,6 +48,11 @@ io.on('connection', (socket) => {
 
     socket.on('typing', () => {
         if (socket.roomId) socket.to(socket.roomId).emit('typing');
+    });
+
+    // NEW: Pass read receipts to the stranger
+    socket.on('mark read', () => {
+        if (socket.roomId) socket.to(socket.roomId).emit('message read');
     });
 
     socket.on('vote continue', () => {
@@ -69,6 +73,9 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
+        totalUsersOnline--; // NEW: Remove user from count
+        io.emit('user count', totalUsersOnline);
+
         if (waitingUser === socket) waitingUser = null;
         else handleLeave(socket);
     });
