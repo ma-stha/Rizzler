@@ -23,37 +23,45 @@
         body { background-color: var(--bg-dark); color: var(--text-light); height: 100dvh; display: flex; justify-content: center; }
         #app { width: 100%; max-width: 500px; height: 100%; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.5); overflow: hidden; }
 
-        /* LOBBY SCREEN */
-        #lobby-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; transition: opacity 0.4s, transform 0.4s; }
-        #lobby-screen.hidden { opacity: 0; pointer-events: none; transform: translateY(-20px); }
-        #lobby-screen .app-logo { height: 60px; margin-bottom: 40px; }
-        .form-group { width: 100%; margin-bottom: 20px; }
-        .form-group label { display: block; font-size: 14px; color: var(--text-muted); margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-        .form-group select { width: 100%; background: #160e24; border: 1px solid rgba(123, 75, 255, 0.3); color: white; padding: 15px; border-radius: 12px; font-size: 16px; outline: none; appearance: none; cursor: pointer; }
-        .form-group select:focus { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
-        #start-search-btn { width: 100%; background: var(--accent); color: white; border: none; padding: 18px; border-radius: 12px; font-size: 18px; font-weight: 800; margin-top: 20px; cursor: pointer; box-shadow: 0 0 20px var(--accent-glow); transition: transform 0.1s; }
-        #start-search-btn:active { transform: scale(0.98); }
-
-        /* HEADER & CHAT (Hidden initially by z-index of lobby) */
+        /* HEADER & CHAT */
         header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); position: relative; }
         .app-logo { height: 38px; width: auto; max-width: 200px; object-fit: contain; margin-bottom: 4px; }
-        
         .online-counter { position: absolute; top: 20px; right: 20px; font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; font-weight: 600; z-index: 100; }
         .dot { width: 8px; height: 8px; background-color: var(--success); border-radius: 50%; box-shadow: 0 0 8px var(--success); animation: pulseGreen 2s infinite; }
         @keyframes pulseGreen { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
-
         #status { font-size: 13px; color: var(--text-muted); transition: color 0.3s; }
         #timer { font-size: 18px; font-weight: 600; margin-top: 8px; }
         #timer.red { color: var(--danger); animation: pulse 1s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        #chat-container { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
+        /* PREMIUM GLASS LOBBY SCREEN */
+        #lobby-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; transition: opacity 0.4s, transform 0.4s; }
+        #lobby-screen.hidden { opacity: 0; pointer-events: none; transform: translateY(-20px); }
+        
+        .lobby-logo-container { text-align: center; margin-bottom: 40px; }
+        .lobby-logo-container .app-logo { height: 50px; margin-bottom: 8px; }
+        .tagline { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 3px; font-weight: 600; }
 
+        .glass-card { background: rgba(22, 14, 36, 0.4); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(123, 75, 255, 0.15); border-radius: 24px; padding: 30px 20px; width: 100%; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        
+        .form-group { margin-bottom: 25px; }
+        .form-group label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; text-align: center; }
+        
+        /* INTERACTIVE PILLS */
+        .pill-container { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+        .pill { flex: 1; min-width: 30%; padding: 14px 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; color: var(--text-muted); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; text-align: center; }
+        .pill.active { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 4px 15px var(--accent-glow); transform: translateY(-2px); }
+
+        #start-search-btn { width: 100%; background: var(--text-light); color: var(--bg-dark); border: none; padding: 18px; border-radius: 16px; font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-top: 10px; cursor: pointer; transition: transform 0.1s, box-shadow 0.2s; }
+        #start-search-btn:active { transform: scale(0.98); }
+        #start-search-btn:hover { box-shadow: 0 0 20px rgba(255,255,255,0.2); }
+
+        /* CHAT AREA */
+        #chat-container { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
         .msg { max-width: 75%; padding: 12px 16px; border-radius: 20px; font-size: 15px; line-height: 1.4; word-wrap: break-word; animation: popIn 0.2s ease-out; }
         .msg.self { align-self: flex-end; background-color: var(--bubble-self); border-bottom-right-radius: 4px; margin-bottom: 2px; }
         .msg.stranger { align-self: flex-start; background-color: var(--bubble-stranger); border-bottom-left-radius: 4px; }
         .msg.system { align-self: center; background-color: transparent; color: var(--text-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin: 10px 0; }
-
         .receipt { font-size: 11px; color: var(--text-muted); align-self: flex-end; margin-top: -8px; margin-right: 4px; margin-bottom: 8px; font-weight: 600; animation: popIn 0.2s; }
         .typing-bubble { width: 60px; background: var(--bubble-stranger); border-radius: 20px; border-bottom-left-radius: 4px; padding: 12px 16px; display: flex; gap: 4px; align-items: center; justify-content: center; align-self: flex-start; animation: popIn 0.2s; }
         .typing-dot { width: 6px; height: 6px; background: var(--text-muted); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
@@ -62,6 +70,7 @@
         @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
         @keyframes popIn { from { opacity: 0; transform: translateY(10px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
+        /* INPUT AREA */
         #input-container { padding: 15px; display: flex; gap: 10px; background: linear-gradient(to top, var(--bg-dark) 50%, transparent); }
         input { flex: 1; background: #160e24; border: 1px solid rgba(123, 75, 255, 0.2); border-radius: 30px; padding: 0 20px; color: white; font-size: 15px; outline: none; transition: border 0.3s; }
         input:focus { border-color: var(--accent); }
@@ -73,6 +82,7 @@
         #next-btn { width: 100%; background: #1a1228; color: var(--text-light); border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
         #next-btn:hover { background: #241938; }
 
+        /* POPUP OVERLAY */
         #popup-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 6, 21, 0.85); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
         #popup-overlay.active { opacity: 1; pointer-events: auto; }
         .popup-box { background: #160e24; padding: 30px 20px; border-radius: 24px; text-align: center; width: 85%; border: 1px solid rgba(123, 75, 255, 0.3); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
@@ -91,28 +101,33 @@
     <div class="online-counter"><div class="dot"></div><span id="user-count-num">1</span></div>
 
     <div id="lobby-screen">
-        <img src="logo.png" alt="Rizzler Logo" class="app-logo">
-        
-        <div class="form-group">
-            <label>I am:</label>
-            <select id="my-gender">
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-            </select>
+        <div class="lobby-logo-container">
+            <img src="logo.png" alt="Rizzler Logo" class="app-logo">
+            <div class="tagline">Rizz for Real Connection</div>
         </div>
         
-        <div class="form-group">
-            <label>Looking for:</label>
-            <select id="search-gender">
-                <option value="female">Female</option>
-                <option value="male">Male</option>
-                <option value="other">Other</option>
-                <option value="any">Anyone</option>
-            </select>
+        <div class="glass-card">
+            <div class="form-group">
+                <label>I am</label>
+                <div class="pill-container" id="my-gender-group">
+                    <button class="pill active" data-value="male">Male</button>
+                    <button class="pill" data-value="female">Female</button>
+                    <button class="pill" data-value="other">Other</button>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Looking for</label>
+                <div class="pill-container" id="search-gender-group">
+                    <button class="pill active" data-value="female">Female</button>
+                    <button class="pill" data-value="male">Male</button>
+                    <button class="pill" data-value="other">Other</button>
+                    <button class="pill" data-value="any">Anyone</button>
+                </div>
+            </div>
+            
+            <button id="start-search-btn">Find Match</button>
         </div>
-        
-        <button id="start-search-btn">Find Match</button>
     </div>
 
     <header>

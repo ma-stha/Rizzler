@@ -12,8 +12,6 @@ const userCountNum = document.getElementById('user-count-num');
 // Lobby Elements
 const lobbyScreen = document.getElementById('lobby-screen');
 const startSearchBtn = document.getElementById('start-search-btn');
-const myGenderSelect = document.getElementById('my-gender');
-const searchGenderSelect = document.getElementById('search-gender');
 
 // Popup Elements
 const popupOverlay = document.getElementById('popup-overlay');
@@ -27,8 +25,30 @@ let typingTimeout;
 let typingIndicator = null;
 let audioContext = null;
 
-// User Preferences Memory
+// User Preferences Memory (Defaults match the active HTML pills)
 let userPrefs = { myGender: 'male', searchGender: 'female' };
+
+// --- UI PILL LOGIC --- //
+function setupPillGroup(groupId, prefKey) {
+    const container = document.getElementById(groupId);
+    const pills = container.querySelectorAll('.pill');
+    
+    pills.forEach(pill => {
+        pill.addEventListener('click', () => {
+            // Remove active class from all pills in this group
+            pills.forEach(p => p.classList.remove('active'));
+            // Add active class to the clicked one
+            pill.classList.add('active');
+            // Save the value to our preferences object
+            userPrefs[prefKey] = pill.getAttribute('data-value');
+        });
+    });
+}
+
+// Initialize the pill buttons
+setupPillGroup('my-gender-group', 'myGender');
+setupPillGroup('search-gender-group', 'searchGender');
+
 
 // --- Audio Engine --- //
 function playSound(type) {
@@ -49,20 +69,16 @@ function playSound(type) {
     }
 }
 
-// --- NEW: Start Searching from Lobby --- //
+// --- Start Searching from Lobby --- //
 startSearchBtn.addEventListener('click', () => {
     // Unlock audio on click
     if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
     if (audioContext.state === 'suspended') audioContext.resume();
 
-    // Save choices
-    userPrefs.myGender = myGenderSelect.value;
-    userPrefs.searchGender = searchGenderSelect.value;
-
     // Hide Lobby, Show Chat UI
     lobbyScreen.classList.add('hidden');
     
-    // Tell server to start finding a match
+    // Tell server to start finding a match with our selected preferences
     socket.emit('start matching', userPrefs);
 });
 
