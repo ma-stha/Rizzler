@@ -49,7 +49,7 @@
         #lobby-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; transition: opacity 0.4s, transform 0.4s; }
         #lobby-screen.hidden { opacity: 0; pointer-events: none; transform: translateY(-20px); }
         .lobby-logo-container { text-align: center; margin-bottom: 30px; }
-        .lobby-logo-container .app-logo { height: 70px; margin-bottom: 10px; } 
+        .lobby-logo-container .app-logo { height: 70px; margin-bottom: 10px; } /* Bigger lobby logo */
         .tagline { font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 3px; font-weight: 600; }
         .glass-card { background: rgba(22, 14, 36, 0.4); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(123, 75, 255, 0.15); border-radius: 24px; padding: 30px 20px; width: 100%; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
         .form-group { margin-bottom: 25px; }
@@ -58,10 +58,9 @@
         .pill { flex: 1; min-width: 30%; padding: 14px 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; color: var(--text-muted); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; text-align: center; }
         .pill.active { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 4px 15px var(--accent-glow); transform: translateY(-2px); }
         
-        /* 18+ Age Gate Checkbox CSS FIX */
-        .legal-check { margin-top: 15px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; width: 100%; }
-        .legal-check input { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; margin: 0; margin-right: 10px; flex-shrink: 0; }
-        .legal-check label { font-size: 12px; color: var(--text-muted); cursor: pointer; margin: 0; display: inline-block; line-height: 1.2; text-transform: none; }
+        /* FEATURE 4: Age Gate Checkbox CSS */
+        .legal-check { margin-top: 10px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; color: var(--text-muted); }
+        .legal-check input { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
 
         #start-search-btn { width: 100%; background: var(--text-light); color: var(--bg-dark); border: none; padding: 18px; border-radius: 16px; font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; cursor: pointer; transition: all 0.2s; }
         #start-search-btn:active:not(:disabled) { transform: scale(0.98); }
@@ -98,7 +97,7 @@
         .overlay.active { opacity: 1; pointer-events: auto; }
         .popup-box { background: #160e24; padding: 30px 20px; border-radius: 24px; text-align: center; width: 85%; border: 1px solid rgba(123, 75, 255, 0.3); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
         .popup-box h2 { margin-bottom: 25px; font-size: 22px; }
-        .popup-btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: margin-bottom: 12px; transition: transform 0.1s; cursor: pointer; }
+        .popup-btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 12px; transition: transform 0.1s; }
         .popup-btn:active { transform: scale(0.98); }
         .btn-continue { background: var(--accent); color: white; box-shadow: 0 0 20px var(--accent-glow); }
         .btn-leave { background: transparent; color: var(--text-muted); border: 1px solid #2a1f40; }
