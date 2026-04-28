@@ -9,38 +9,53 @@ const io = new Server(server);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-let waitingUser = null;
+// We upgraded from a single waiting user to a queue!
+let waitingQueue = []; 
 const rooms = {};
-let totalUsersOnline = 0; // NEW: Track online users
+let totalUsersOnline = 0;
 
 function findMatch(socket) {
-    if (waitingUser === socket) return;
-    
-    if (waitingUser) {
+    // 1. Look through the queue for a match
+    const matchIndex = waitingQueue.findIndex(user => 
+        user !== socket && // Don't match with yourself
+        (user.lookingFor === socket.gender || user.lookingFor === 'any') && // They want what you are
+        (socket.lookingFor === user.gender || socket.lookingFor === 'any')  // You want what they are
+    );
+
+    if (matchIndex !== -1) {
+        // MATCH FOUND! Pull them out of the queue
+        const partner = waitingQueue.splice(matchIndex, 1)[0];
+        
         const roomId = 'room_' + Math.random().toString(36).substring(2, 9);
         
         socket.join(roomId);
-        waitingUser.join(roomId);
+        partner.join(roomId);
         
         socket.roomId = roomId;
-        waitingUser.roomId = roomId;
+        partner.roomId = roomId;
 
-        rooms[roomId] = { users: [socket.id, waitingUser.id], votes: 0 };
+        rooms[roomId] = { users: [socket.id, partner.id], votes: 0 };
 
         io.to(roomId).emit('connected');
-        waitingUser = null; 
     } else {
-        waitingUser = socket;
+        // NO MATCH FOUND. Add to queue.
+        if (!waitingQueue.includes(socket)) {
+            waitingQueue.push(socket);
+        }
         socket.emit('waiting');
     }
 }
 
 io.on('connection', (socket) => {
-    // NEW: Update everyone when a new user joins
     totalUsersOnline++;
     io.emit('user count', totalUsersOnline);
 
-    findMatch(socket);
+    // NEW: Wait for the user to submit their Lobby preferences
+    socket.on('start matching', (prefs) => {
+        socket.gender = prefs.myGender;
+        socket.lookingFor = prefs.searchGender;
+        findMatch(socket);
+    });
 
     socket.on('chat message', (msg) => {
         if (socket.roomId) socket.to(socket.roomId).emit('chat message', msg);
@@ -50,7 +65,6 @@ io.on('connection', (socket) => {
         if (socket.roomId) socket.to(socket.roomId).emit('typing');
     });
 
-    // NEW: Pass read receipts to the stranger
     socket.on('mark read', () => {
         if (socket.roomId) socket.to(socket.roomId).emit('message read');
     });
@@ -68,16 +82,13 @@ io.on('connection', (socket) => {
         findMatch(socket); 
     });
 
-    socket.on('request match', () => {
-        findMatch(socket);
-    });
-
     socket.on('disconnect', () => {
-        totalUsersOnline--; // NEW: Remove user from count
+        totalUsersOnline--;
         io.emit('user count', totalUsersOnline);
 
-        if (waitingUser === socket) waitingUser = null;
-        else handleLeave(socket);
+        // Remove from queue if they leave before matching
+        waitingQueue = waitingQueue.filter(u => u !== socket);
+        handleLeave(socket);
     });
 
     function handleLeave(socket) {
