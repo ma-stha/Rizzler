@@ -9,23 +9,22 @@ const io = new Server(server);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// We upgraded from a single waiting user to a queue!
 let waitingQueue = []; 
 const rooms = {};
 let totalUsersOnline = 0;
 
 function findMatch(socket) {
-    // 1. Look through the queue for a match
+    // SECURITY 5: Ghost Queue Cleanup - Remove anyone who disconnected but stuck in queue
+    waitingQueue = waitingQueue.filter(u => u.connected);
+
     const matchIndex = waitingQueue.findIndex(user => 
-        user !== socket && // Don't match with yourself
-        (user.lookingFor === socket.gender || user.lookingFor === 'any') && // They want what you are
-        (socket.lookingFor === user.gender || socket.lookingFor === 'any')  // You want what they are
+        user !== socket && 
+        (user.lookingFor === socket.gender || user.lookingFor === 'any') && 
+        (socket.lookingFor === user.gender || socket.lookingFor === 'any')  
     );
 
     if (matchIndex !== -1) {
-        // MATCH FOUND! Pull them out of the queue
         const partner = waitingQueue.splice(matchIndex, 1)[0];
-        
         const roomId = 'room_' + Math.random().toString(36).substring(2, 9);
         
         socket.join(roomId);
@@ -38,7 +37,6 @@ function findMatch(socket) {
 
         io.to(roomId).emit('connected');
     } else {
-        // NO MATCH FOUND. Add to queue.
         if (!waitingQueue.includes(socket)) {
             waitingQueue.push(socket);
         }
@@ -50,7 +48,10 @@ io.on('connection', (socket) => {
     totalUsersOnline++;
     io.emit('user count', totalUsersOnline);
 
-    // NEW: Wait for the user to submit their Lobby preferences
+    // Rate Limiting Trackers
+    socket.messageCount = 0;
+    socket.lastMessageTime = Date.now();
+
     socket.on('start matching', (prefs) => {
         socket.gender = prefs.myGender;
         socket.lookingFor = prefs.searchGender;
@@ -58,7 +59,21 @@ io.on('connection', (socket) => {
     });
 
     socket.on('chat message', (msg) => {
-        if (socket.roomId) socket.to(socket.roomId).emit('chat message', msg);
+        if (typeof msg !== 'string' || msg.trim().length === 0) return;
+        
+        // SECURITY 3: Anti-Spam Throttling (Max 4 messages per 2 seconds)
+        const now = Date.now();
+        if (now - socket.lastMessageTime > 2000) {
+            socket.messageCount = 0; 
+        }
+        socket.lastMessageTime = now;
+        socket.messageCount++;
+
+        if (socket.messageCount > 4) return; // Drop spam messages silently
+
+        const safeMsg = msg.substring(0, 500); 
+        
+        if (socket.roomId) socket.to(socket.roomId).emit('chat message', safeMsg);
     });
 
     socket.on('typing', () => {
@@ -85,8 +100,6 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         totalUsersOnline--;
         io.emit('user count', totalUsersOnline);
-
-        // Remove from queue if they leave before matching
         waitingQueue = waitingQueue.filter(u => u !== socket);
         handleLeave(socket);
     });

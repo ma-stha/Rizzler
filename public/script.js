@@ -1,6 +1,5 @@
 const socket = io();
 
-// DOM Elements
 const statusEl = document.getElementById('status');
 const timerEl = document.getElementById('timer');
 const chatContainer = document.getElementById('chat-container');
@@ -8,49 +7,50 @@ const inputEl = document.getElementById('msg-input');
 const sendBtn = document.getElementById('send-btn');
 const nextBtn = document.getElementById('next-btn');
 const userCountNum = document.getElementById('user-count-num');
+const connectionDot = document.getElementById('connection-dot');
 
-// Lobby Elements
 const lobbyScreen = document.getElementById('lobby-screen');
 const startSearchBtn = document.getElementById('start-search-btn');
+const ageCheck = document.getElementById('age-check'); // NEW: Age Gate
 
-// Popup Elements
 const popupOverlay = document.getElementById('popup-overlay');
 const btnContinue = document.getElementById('btn-continue');
 const btnPopupNext = document.getElementById('btn-popup-next');
 
+const leaveConfirmOverlay = document.getElementById('leave-confirm-overlay');
+const btnStay = document.getElementById('btn-stay');
+const btnConfirmLeave = document.getElementById('btn-confirm-leave');
+
 let isUnlocked = false;
+let hasActiveChat = false; 
 let timeLeft = 120;
 let timerInterval;
 let typingTimeout;
 let typingIndicator = null;
 let audioContext = null;
 
-// User Preferences Memory (Defaults match the active HTML pills)
 let userPrefs = { myGender: 'male', searchGender: 'female' };
 
-// --- UI PILL LOGIC --- //
+// --- UI PILL & CHECKBOX LOGIC --- //
 function setupPillGroup(groupId, prefKey) {
     const container = document.getElementById(groupId);
     const pills = container.querySelectorAll('.pill');
-    
     pills.forEach(pill => {
         pill.addEventListener('click', () => {
-            // Remove active class from all pills in this group
             pills.forEach(p => p.classList.remove('active'));
-            // Add active class to the clicked one
             pill.classList.add('active');
-            // Save the value to our preferences object
             userPrefs[prefKey] = pill.getAttribute('data-value');
         });
     });
 }
-
-// Initialize the pill buttons
 setupPillGroup('my-gender-group', 'myGender');
 setupPillGroup('search-gender-group', 'searchGender');
 
+// Enable/Disable Match button based on checkbox
+ageCheck.addEventListener('change', () => {
+    startSearchBtn.disabled = !ageCheck.checked;
+});
 
-// --- Audio Engine --- //
 function playSound(type) {
     if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
     if (audioContext.state === 'suspended') audioContext.resume();
@@ -69,26 +69,43 @@ function playSound(type) {
     }
 }
 
-// --- Start Searching from Lobby --- //
 startSearchBtn.addEventListener('click', () => {
-    // Unlock audio on click
+    if (!ageCheck.checked) return; // Extra layer of protection
+    
     if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
     if (audioContext.state === 'suspended') audioContext.resume();
 
-    // Hide Lobby, Show Chat UI
     lobbyScreen.classList.add('hidden');
-    
-    // Tell server to start finding a match with our selected preferences
     socket.emit('start matching', userPrefs);
 });
 
-// --- SOCKET EVENTS --- //
+// --- CONNECTION MONITORING --- //
+socket.on('disconnect', () => {
+    connectionDot.classList.remove('pulse');
+    connectionDot.classList.add('offline');
+    if (hasActiveChat || lobbyScreen.classList.contains('hidden')) {
+        statusEl.innerText = 'Connection lost. Reconnecting...';
+        statusEl.style.color = 'var(--warning)';
+        inputEl.disabled = true;
+        sendBtn.disabled = true;
+    }
+});
+
+socket.on('connect', () => {
+    connectionDot.classList.remove('offline');
+    connectionDot.classList.add('pulse');
+    if (lobbyScreen.classList.contains('hidden') && !hasActiveChat) {
+        socket.emit('start matching', userPrefs);
+    }
+});
+
 socket.on('user count', (count) => { userCountNum.innerText = count; });
 
 socket.on('waiting', () => { resetChatState('Searching for a match...'); });
 
 socket.on('connected', () => {
     isUnlocked = false;
+    hasActiveChat = true; 
     chatContainer.innerHTML = '';
     statusEl.innerText = 'Match found. Make it count.';
     statusEl.style.color = '#fff';
@@ -129,8 +146,10 @@ socket.on('typing', () => {
 
 socket.on('stranger left', () => {
     clearInterval(timerInterval);
+    hasActiveChat = false; 
     timerEl.classList.add('hide');
     popupOverlay.classList.remove('active');
+    leaveConfirmOverlay.classList.remove('active');
     
     statusEl.innerText = 'Stranger disconnected...';
     statusEl.style.color = 'var(--danger)';
@@ -138,7 +157,6 @@ socket.on('stranger left', () => {
     sendBtn.disabled = true;
     
     appendMessage('Stranger has left.', 'system');
-    // Auto-search again using saved preferences!
     setTimeout(() => socket.emit('start matching', userPrefs), 1500);
 });
 
@@ -165,13 +183,46 @@ function sendMessage() {
     }
 }
 
-sendBtn.addEventListener('click', sendMessage);
-inputEl.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+sendBtn.addEventListener('click', (e) => {
+    e.preventDefault(); 
+    sendMessage();
+    inputEl.focus(); 
+});
+
+inputEl.addEventListener('keypress', (e) => { 
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        sendMessage();
+    }
+});
 inputEl.addEventListener('input', () => socket.emit('typing'));
 
-// When hitting Next, we re-emit the search with our saved preferences
-nextBtn.addEventListener('click', () => socket.emit('leave'));
-btnPopupNext.addEventListener('click', () => { popupOverlay.classList.remove('active'); socket.emit('leave'); });
+function attemptLeave() {
+    if (hasActiveChat) {
+        leaveConfirmOverlay.classList.add('active');
+    } else {
+        executeLeave();
+    }
+}
+
+function executeLeave() {
+    hasActiveChat = false;
+    popupOverlay.classList.remove('active');
+    leaveConfirmOverlay.classList.remove('active');
+    socket.emit('leave');
+}
+
+nextBtn.addEventListener('click', attemptLeave);
+btnPopupNext.addEventListener('click', attemptLeave);
+btnStay.addEventListener('click', () => leaveConfirmOverlay.classList.remove('active'));
+btnConfirmLeave.addEventListener('click', executeLeave);
+
+window.addEventListener('beforeunload', (e) => {
+    if (hasActiveChat) {
+        e.preventDefault();
+        e.returnValue = ''; 
+    }
+});
 
 btnContinue.addEventListener('click', () => {
     socket.emit('vote continue');
@@ -211,7 +262,7 @@ function appendMessage(msg, type) {
 }
 
 function resetChatState(statusText) {
-    clearInterval(timerInterval); isUnlocked = false; timerEl.classList.add('hide'); popupOverlay.classList.remove('active');
+    clearInterval(timerInterval); isUnlocked = false; hasActiveChat = false; timerEl.classList.add('hide'); popupOverlay.classList.remove('active'); leaveConfirmOverlay.classList.remove('active');
     statusEl.innerText = statusText; statusEl.style.color = 'var(--text-muted)';
     inputEl.disabled = true; sendBtn.disabled = true; chatContainer.innerHTML = '';
 }

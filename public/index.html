@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Rizzler</title>
+    
+    <meta property="og:title" content="Rizzler - Rizz for Real Connection">
+    <meta property="og:description" content="Match instantly. 2 minutes on the clock. Make it count.">
+    <meta property="og:image" content="logo.png">
+    <meta name="theme-color" content="#0b0615">
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
 
@@ -17,51 +23,55 @@
             --text-muted: #887a9e;
             --danger: #ff3366;
             --success: #00ff88;
+            --warning: #ffb703;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg-dark); color: var(--text-light); height: 100dvh; display: flex; justify-content: center; }
         #app { width: 100%; max-width: 500px; height: 100%; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.5); overflow: hidden; }
 
-        /* HEADER & CHAT */
-        header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); position: relative; }
-        .app-logo { height: 38px; width: auto; max-width: 200px; object-fit: contain; margin-bottom: 4px; }
+        /* UI POLISH: Centered Header & Bigger Logo */
+        header { padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.05); position: relative; }
+        .app-logo { height: 55px; width: auto; max-width: 250px; object-fit: contain; margin-bottom: 10px; }
+        
         .online-counter { position: absolute; top: 20px; right: 20px; font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; font-weight: 600; z-index: 100; }
-        .dot { width: 8px; height: 8px; background-color: var(--success); border-radius: 50%; box-shadow: 0 0 8px var(--success); animation: pulseGreen 2s infinite; }
+        .dot { width: 8px; height: 8px; background-color: var(--success); border-radius: 50%; box-shadow: 0 0 8px var(--success); transition: background-color 0.3s; }
+        .dot.pulse { animation: pulseGreen 2s infinite; }
+        .dot.offline { background-color: var(--warning); box-shadow: 0 0 8px var(--warning); animation: none; }
         @keyframes pulseGreen { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
-        #status { font-size: 13px; color: var(--text-muted); transition: color 0.3s; }
-        #timer { font-size: 18px; font-weight: 600; margin-top: 8px; }
+        
+        #status { font-size: 13px; color: var(--text-muted); transition: color 0.3s; text-align: center; }
+        #timer { font-size: 18px; font-weight: 600; margin-top: 8px; text-align: center; }
         #timer.red { color: var(--danger); animation: pulse 1s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        /* PREMIUM GLASS LOBBY SCREEN */
+        /* LOBBY */
         #lobby-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; transition: opacity 0.4s, transform 0.4s; }
         #lobby-screen.hidden { opacity: 0; pointer-events: none; transform: translateY(-20px); }
-        
-        .lobby-logo-container { text-align: center; margin-bottom: 40px; }
-        .lobby-logo-container .app-logo { height: 50px; margin-bottom: 8px; }
-        .tagline { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 3px; font-weight: 600; }
-
+        .lobby-logo-container { text-align: center; margin-bottom: 30px; }
+        .lobby-logo-container .app-logo { height: 70px; margin-bottom: 10px; } /* Bigger lobby logo */
+        .tagline { font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 3px; font-weight: 600; }
         .glass-card { background: rgba(22, 14, 36, 0.4); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(123, 75, 255, 0.15); border-radius: 24px; padding: 30px 20px; width: 100%; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
-        
         .form-group { margin-bottom: 25px; }
         .form-group label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; text-align: center; }
-        
-        /* INTERACTIVE PILLS */
         .pill-container { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
         .pill { flex: 1; min-width: 30%; padding: 14px 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; color: var(--text-muted); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; text-align: center; }
         .pill.active { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 4px 15px var(--accent-glow); transform: translateY(-2px); }
+        
+        /* FEATURE 4: Age Gate Checkbox CSS */
+        .legal-check { margin-top: 10px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; color: var(--text-muted); }
+        .legal-check input { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
 
-        #start-search-btn { width: 100%; background: var(--text-light); color: var(--bg-dark); border: none; padding: 18px; border-radius: 16px; font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-top: 10px; cursor: pointer; transition: transform 0.1s, box-shadow 0.2s; }
-        #start-search-btn:active { transform: scale(0.98); }
-        #start-search-btn:hover { box-shadow: 0 0 20px rgba(255,255,255,0.2); }
+        #start-search-btn { width: 100%; background: var(--text-light); color: var(--bg-dark); border: none; padding: 18px; border-radius: 16px; font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; cursor: pointer; transition: all 0.2s; }
+        #start-search-btn:active:not(:disabled) { transform: scale(0.98); }
+        #start-search-btn:disabled { background: #2a1f40; color: #665a80; cursor: not-allowed; opacity: 0.7; }
 
         /* CHAT AREA */
         #chat-container { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
         .msg { max-width: 75%; padding: 12px 16px; border-radius: 20px; font-size: 15px; line-height: 1.4; word-wrap: break-word; animation: popIn 0.2s ease-out; }
         .msg.self { align-self: flex-end; background-color: var(--bubble-self); border-bottom-right-radius: 4px; margin-bottom: 2px; }
         .msg.stranger { align-self: flex-start; background-color: var(--bubble-stranger); border-bottom-left-radius: 4px; }
-        .msg.system { align-self: center; background-color: transparent; color: var(--text-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin: 10px 0; }
+        .msg.system { align-self: center; background-color: transparent; color: var(--text-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin: 10px 0; text-align: center; }
         .receipt { font-size: 11px; color: var(--text-muted); align-self: flex-end; margin-top: -8px; margin-right: 4px; margin-bottom: 8px; font-weight: 600; animation: popIn 0.2s; }
         .typing-bubble { width: 60px; background: var(--bubble-stranger); border-radius: 20px; border-bottom-left-radius: 4px; padding: 12px 16px; display: flex; gap: 4px; align-items: center; justify-content: center; align-self: flex-start; animation: popIn 0.2s; }
         .typing-dot { width: 6px; height: 6px; background: var(--text-muted); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
@@ -82,15 +92,16 @@
         #next-btn { width: 100%; background: #1a1228; color: var(--text-light); border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
         #next-btn:hover { background: #241938; }
 
-        /* POPUP OVERLAY */
-        #popup-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 6, 21, 0.85); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
-        #popup-overlay.active { opacity: 1; pointer-events: auto; }
+        /* OVERLAYS */
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 6, 21, 0.85); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+        .overlay.active { opacity: 1; pointer-events: auto; }
         .popup-box { background: #160e24; padding: 30px 20px; border-radius: 24px; text-align: center; width: 85%; border: 1px solid rgba(123, 75, 255, 0.3); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
         .popup-box h2 { margin-bottom: 25px; font-size: 22px; }
         .popup-btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 12px; transition: transform 0.1s; }
         .popup-btn:active { transform: scale(0.98); }
         .btn-continue { background: var(--accent); color: white; box-shadow: 0 0 20px var(--accent-glow); }
         .btn-leave { background: transparent; color: var(--text-muted); border: 1px solid #2a1f40; }
+        .btn-danger { color: var(--danger); border-color: rgba(255, 51, 102, 0.3); }
         
         .hide { display: none !important; }
     </style>
@@ -98,7 +109,7 @@
 <body>
 
 <div id="app">
-    <div class="online-counter"><div class="dot"></div><span id="user-count-num">1</span></div>
+    <div class="online-counter"><div id="connection-dot" class="dot pulse"></div><span id="user-count-num">1</span></div>
 
     <div id="lobby-screen">
         <div class="lobby-logo-container">
@@ -126,7 +137,12 @@
                 </div>
             </div>
             
-            <button id="start-search-btn">Find Match</button>
+            <div class="legal-check">
+                <input type="checkbox" id="age-check">
+                <label for="age-check">I am 18+ and agree to keep it respectful.</label>
+            </div>
+
+            <button id="start-search-btn" disabled>Find Match</button>
         </div>
     </div>
 
@@ -139,7 +155,7 @@
     <div id="chat-container"></div>
 
     <div id="input-container">
-        <input type="text" id="msg-input" placeholder="Say something..." autocomplete="off" disabled>
+        <input type="text" id="msg-input" placeholder="Say something..." autocomplete="off" maxlength="500" disabled>
         <button id="send-btn" disabled>
             <svg viewBox="0 0 24 24"><path d="M2,21L23,12L2,3V10L17,12L2,14V21Z"></path></svg>
         </button>
@@ -149,11 +165,20 @@
         <button id="next-btn">Next Stranger</button>
     </footer>
 
-    <div id="popup-overlay">
+    <div id="popup-overlay" class="overlay">
         <div class="popup-box">
             <h2>Continue chatting?</h2>
             <button id="btn-continue" class="popup-btn btn-continue">Continue</button>
             <button id="btn-popup-next" class="popup-btn btn-leave">Next Stranger</button>
+        </div>
+    </div>
+
+    <div id="leave-confirm-overlay" class="overlay">
+        <div class="popup-box">
+            <h2 style="color: var(--danger);">Wait!</h2>
+            <p style="color: var(--text-muted); margin-bottom: 25px; font-size: 14px; line-height: 1.5;">Are you sure you want to leave?<br>You will lose this connection forever.</p>
+            <button id="btn-stay" class="popup-btn btn-continue">Nevermind, Stay</button>
+            <button id="btn-confirm-leave" class="popup-btn btn-leave btn-danger">Yes, Leave</button>
         </div>
     </div>
 </div>
