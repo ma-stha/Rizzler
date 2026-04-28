@@ -1,94 +1,88 @@
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
-const path = require("path");
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.use(express.static(__dirname));
-
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
-});
+// Serve static files from the 'public' directory
+app.use(express.static(path.join(__dirname, 'public')));
 
 let waitingUser = null;
-let rooms = {};
-let continueVotes = {}; // room -> Set()
+const rooms = {};
 
-io.on("connection", (socket) => {
+// Matchmaking Logic
+function findMatch(socket) {
+    if (waitingUser === socket) return;
+    
+    if (waitingUser) {
+        const roomId = 'room_' + Math.random().toString(36).substring(2, 9);
+        
+        socket.join(roomId);
+        waitingUser.join(roomId);
+        
+        socket.roomId = roomId;
+        waitingUser.roomId = roomId;
 
-  function matchUser() {
-    if (waitingUser && waitingUser.id !== socket.id) {
-      const room = socket.id + "#" + waitingUser.id;
+        rooms[roomId] = {
+            users: [socket.id, waitingUser.id],
+            votes: 0 
+        };
 
-      socket.join(room);
-      waitingUser.join(room);
-
-      rooms[socket.id] = room;
-      rooms[waitingUser.id] = room;
-
-      continueVotes[room] = new Set(); // ✅ FIX
-
-      socket.emit("startChat");
-      waitingUser.emit("startChat");
-
-      waitingUser = null;
+        io.to(roomId).emit('connected');
+        waitingUser = null; 
     } else {
-      waitingUser = socket;
+        waitingUser = socket;
+        socket.emit('waiting');
     }
-  }
+}
 
-  matchUser();
+// Socket Connection Handling
+io.on('connection', (socket) => {
+    findMatch(socket);
 
-  socket.on("message", (msg) => {
-    const room = rooms[socket.id];
-    if (room) socket.to(room).emit("message", msg);
-  });
+    socket.on('chat message', (msg) => {
+        if (socket.roomId) socket.to(socket.roomId).emit('chat message', msg);
+    });
 
-  socket.on("typing", () => {
-    const room = rooms[socket.id];
-    if (room) socket.to(room).emit("typing");
-  });
+    socket.on('typing', () => {
+        if (socket.roomId) socket.to(socket.roomId).emit('typing');
+    });
 
-  socket.on("nextUser", () => {
-    const room = rooms[socket.id];
+    socket.on('vote continue', () => {
+        const room = rooms[socket.roomId];
+        if (room) {
+            room.votes++;
+            if (room.votes === 2) io.to(socket.roomId).emit('unlocked');
+        }
+    });
 
-    if (room) {
-      socket.to(room).emit("endChat");
-      delete continueVotes[room];
+    socket.on('leave', () => {
+        handleLeave(socket);
+        findMatch(socket); 
+    });
+
+    socket.on('request match', () => {
+        findMatch(socket);
+    });
+
+    socket.on('disconnect', () => {
+        if (waitingUser === socket) waitingUser = null;
+        else handleLeave(socket);
+    });
+
+    function handleLeave(socket) {
+        const roomId = socket.roomId;
+        if (roomId) {
+            socket.to(roomId).emit('stranger left');
+            socket.leave(roomId);
+            socket.roomId = null;
+            if (rooms[roomId]) delete rooms[roomId]; 
+        }
     }
-
-    delete rooms[socket.id];
-    matchUser();
-  });
-
-  socket.on("continueChat", () => {
-    const room = rooms[socket.id];
-    if (!room) return;
-
-    // ✅ FIX: prevent duplicate vote
-    continueVotes[room].add(socket.id);
-
-    if (continueVotes[room].size === 2) {
-      io.to(room).emit("continueApproved");
-      delete continueVotes[room];
-    }
-  });
-
-  socket.on("disconnect", () => {
-    const room = rooms[socket.id];
-
-    if (room) {
-      socket.to(room).emit("endChat");
-      delete continueVotes[room];
-    }
-
-    if (waitingUser === socket) waitingUser = null;
-    delete rooms[socket.id];
-  });
-
 });
 
-server.listen(process.env.PORT || 3000);
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => console.log(`🚀 Rizzler running on port ${PORT}`));
