@@ -14,7 +14,7 @@ const rooms = {};
 let totalUsersOnline = 0;
 
 function findMatch(socket) {
-    // SECURITY 5: Ghost Queue Cleanup - Remove anyone who disconnected but stuck in queue
+    // SECURITY: Remove disconnected "ghost" users from queue before matching
     waitingQueue = waitingQueue.filter(u => u.connected);
 
     const matchIndex = waitingQueue.findIndex(user => 
@@ -48,7 +48,7 @@ io.on('connection', (socket) => {
     totalUsersOnline++;
     io.emit('user count', totalUsersOnline);
 
-    // Rate Limiting Trackers
+    // Rate Limiting Trackers for Anti-Spam
     socket.messageCount = 0;
     socket.lastMessageTime = Date.now();
 
@@ -61,7 +61,7 @@ io.on('connection', (socket) => {
     socket.on('chat message', (msg) => {
         if (typeof msg !== 'string' || msg.trim().length === 0) return;
         
-        // SECURITY 3: Anti-Spam Throttling (Max 4 messages per 2 seconds)
+        // SECURITY: Anti-Spam Throttling (Max 4 messages per 2 seconds)
         const now = Date.now();
         if (now - socket.lastMessageTime > 2000) {
             socket.messageCount = 0; 
@@ -71,7 +71,7 @@ io.on('connection', (socket) => {
 
         if (socket.messageCount > 4) return; // Drop spam messages silently
 
-        const safeMsg = msg.substring(0, 500); 
+        const safeMsg = msg.substring(0, 500); // 500 character limit
         
         if (socket.roomId) socket.to(socket.roomId).emit('chat message', safeMsg);
     });

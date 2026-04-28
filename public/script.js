@@ -11,7 +11,7 @@ const connectionDot = document.getElementById('connection-dot');
 
 const lobbyScreen = document.getElementById('lobby-screen');
 const startSearchBtn = document.getElementById('start-search-btn');
-const ageCheck = document.getElementById('age-check'); // NEW: Age Gate
+const ageCheck = document.getElementById('age-check'); 
 
 const popupOverlay = document.getElementById('popup-overlay');
 const btnContinue = document.getElementById('btn-continue');
@@ -46,7 +46,6 @@ function setupPillGroup(groupId, prefKey) {
 setupPillGroup('my-gender-group', 'myGender');
 setupPillGroup('search-gender-group', 'searchGender');
 
-// Enable/Disable Match button based on checkbox
 ageCheck.addEventListener('change', () => {
     startSearchBtn.disabled = !ageCheck.checked;
 });
@@ -70,7 +69,7 @@ function playSound(type) {
 }
 
 startSearchBtn.addEventListener('click', () => {
-    if (!ageCheck.checked) return; // Extra layer of protection
+    if (!ageCheck.checked) return; 
     
     if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
     if (audioContext.state === 'suspended') audioContext.resume();
