@@ -38,20 +38,27 @@
             box-shadow: 0 0 40px rgba(0,0,0,0.5);
         }
 
+        /* HEADER & LOGO */
         header {
             padding: 20px;
             text-align: center;
             border-bottom: 1px solid rgba(255,255,255,0.05);
             position: relative;
         }
-        h1 { font-weight: 800; font-size: 24px; text-transform: uppercase; letter-spacing: 2px; }
-        .rizz { color: var(--accent); }
-        #status { font-size: 13px; color: var(--text-muted); margin-top: 4px; transition: color 0.3s; }
+        .app-logo {
+            height: 38px; /* Premium sizing for mobile headers */
+            width: auto;
+            max-width: 200px;
+            object-fit: contain;
+            margin-bottom: 4px;
+        }
+        #status { font-size: 13px; color: var(--text-muted); transition: color 0.3s; }
         #timer { font-size: 18px; font-weight: 600; margin-top: 8px; }
         #timer.red { color: var(--danger); animation: pulse 1s infinite; }
 
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
+        /* CHAT AREA */
         #chat-container {
             flex: 1;
             padding: 20px;
@@ -69,6 +76,7 @@
 
         @keyframes popIn { from { opacity: 0; transform: translateY(10px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
+        /* INPUT AREA */
         #input-container {
             padding: 15px;
             display: flex;
@@ -80,10 +88,12 @@
         #send-btn { background: var(--accent); color: white; border: none; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px var(--accent-glow); }
         #send-btn svg { width: 20px; height: 20px; fill: white; transform: translateX(2px); }
 
+        /* FOOTER / NEXT BTN */
         footer { padding: 0 15px 20px 15px; }
         #next-btn { width: 100%; background: #1a1228; color: var(--text-light); border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
         #next-btn:hover { background: #241938; }
 
+        /* POPUP OVERLAY */
         #popup-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(11, 6, 21, 0.85); backdrop-filter: blur(8px);
@@ -105,7 +115,8 @@
 
 <div id="app">
     <header>
-        <h1><span class="rizz">Rizz</span>ler</h1>
+        <img src="logo.png" alt="Rizzler Logo" class="app-logo">
+        
         <div id="status">Connecting to server...</div>
         <div id="timer" class="hidden">02:00</div>
     </header>
