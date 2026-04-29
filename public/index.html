@@ -7,7 +7,7 @@
     <title>Rizzler | Anonymous Speed Dating</title>
     <meta name="description" content="Rizzler is a real-time, anonymous speed dating platform. Match instantly, survive the 2-minute timer, and unlock real connections. No signup required.">
     <meta name="keywords" content="anonymous chat, speed dating, real-time chat, meet strangers, online dating, rizzler, rizz app, text chat">
-    <meta name="author" content="Rizzler">
+    <meta name="author" content="Metanite Marketing">
     <meta name="robots" content="index, follow">
 
     <link rel="icon" type="image/png" href="favicon.png">
@@ -108,9 +108,14 @@
         #send-btn:active { transform: scale(0.9); }
         #send-btn svg { width: 20px; height: 20px; fill: white; transform: translateX(2px); }
 
+        /* FOOTER & METANITE MARKETING CREDITS */
         footer { padding: 0 15px 20px 15px; }
         #next-btn { width: 100%; background: #1a1228; color: var(--text-light); border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
         #next-btn:hover { background: #241938; }
+        
+        .footer-credits { text-align: center; margin-top: 15px; font-size: 11px; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px; }
+        .footer-credits a { color: var(--text-muted); text-decoration: none; border-bottom: 1px solid rgba(123, 75, 255, 0.3); transition: color 0.2s, border-color 0.2s; padding-bottom: 1px; }
+        .footer-credits a:hover { color: var(--text-light); border-color: var(--accent); }
 
         /* OVERLAYS */
         .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 6, 21, 0.85); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
@@ -176,6 +181,10 @@
             <div class="seo-step"><strong>2. Beat the clock:</strong> You have exactly 2 minutes to make a spark. No pictures, no profiles, just pure rizz.</div>
             <div class="seo-step"><strong>3. Unlock the chat:</strong> If you both vibe, hit "Continue" before the timer hits zero to unlock unlimited texting.</div>
         </div>
+        
+        <div class="footer-credits" style="margin-bottom: 30px;">
+            A <a href="https://metanitemarketing.com.au" target="_blank" rel="noopener noreferrer">'Metanite Marketing'</a> Product • <a href="mailto:info@metanitemarketing.com.au">Contact Us</a>
+        </div>
     </div>
 
     <header>
@@ -195,6 +204,9 @@
 
     <footer>
         <button id="next-btn">Next Stranger</button>
+        <div class="footer-credits">
+            A <a href="https://metanitemarketing.com" target="_blank" rel="noopener noreferrer">Metanite Marketing</a> Product • <a href="mailto:contact@metanitemarketing.com">Contact Us</a>
+        </div>
     </footer>
 
     <div id="popup-overlay" class="overlay">
