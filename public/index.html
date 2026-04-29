@@ -39,7 +39,7 @@
         body { background-color: var(--bg-dark); color: var(--text-light); height: 100dvh; display: flex; justify-content: center; }
         #app { width: 100%; max-width: 500px; height: 100%; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.5); overflow: hidden; }
 
-        /* UI POLISH: Centered Header & Bigger Logo */
+        /* HEADER & CHAT AREA */
         header { padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.05); position: relative; }
         .app-logo { height: 55px; width: auto; max-width: 250px; object-fit: contain; margin-bottom: 10px; }
         
@@ -54,12 +54,15 @@
         #timer.red { color: var(--danger); animation: pulse 1s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        /* LOBBY */
-        #lobby-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; transition: opacity 0.4s, transform 0.4s; }
+        /* SCROLLABLE LOBBY & SEO */
+        #lobby-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 50; overflow-y: auto; padding: 20px; transition: opacity 0.4s, transform 0.4s; display: flex; flex-direction: column; align-items: center; }
         #lobby-screen.hidden { opacity: 0; pointer-events: none; transform: translateY(-20px); }
+        
+        .lobby-center-wrap { width: 100%; display: flex; flex-direction: column; justify-content: center; min-height: 85vh; flex: 1 0 auto; }
         .lobby-logo-container { text-align: center; margin-bottom: 30px; }
         .lobby-logo-container .app-logo { height: 70px; margin-bottom: 10px; } 
         .tagline { font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 3px; font-weight: 600; }
+        
         .glass-card { background: rgba(22, 14, 36, 0.4); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(123, 75, 255, 0.15); border-radius: 24px; padding: 30px 20px; width: 100%; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
         .form-group { margin-bottom: 25px; }
         .form-group label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; text-align: center; }
@@ -67,7 +70,6 @@
         .pill { flex: 1; min-width: 30%; padding: 14px 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; color: var(--text-muted); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; text-align: center; }
         .pill.active { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 4px 15px var(--accent-glow); transform: translateY(-2px); }
         
-        /* 18+ Age Gate Checkbox CSS FIX */
         .legal-check { margin-top: 15px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; width: 100%; }
         .legal-check input { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; margin: 0; margin-right: 10px; flex-shrink: 0; }
         .legal-check label { font-size: 12px; color: var(--text-muted); cursor: pointer; margin: 0; display: inline-block; line-height: 1.2; text-transform: none; }
@@ -76,7 +78,15 @@
         #start-search-btn:active:not(:disabled) { transform: scale(0.98); }
         #start-search-btn:disabled { background: #2a1f40; color: #665a80; cursor: not-allowed; opacity: 0.7; }
 
-        /* CHAT AREA */
+        /* SEO SECTION CSS */
+        .seo-section { width: 100%; padding: 30px 25px; background: rgba(22, 14, 36, 0.3); border-radius: 24px; border: 1px solid rgba(123, 75, 255, 0.1); margin-top: 20px; margin-bottom: 40px; text-align: left; }
+        .seo-section h2 { color: var(--text-light); font-size: 18px; margin-bottom: 12px; font-weight: 800; }
+        .seo-section h3 { color: var(--text-light); font-size: 15px; margin-top: 25px; margin-bottom: 12px; font-weight: 800; }
+        .seo-section p { color: var(--text-muted); font-size: 14px; line-height: 1.6; margin-bottom: 12px; }
+        .seo-step { margin-bottom: 12px; font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+        .seo-step strong { color: var(--accent); font-weight: 800; }
+
+        /* CHAT BUBBLES */
         #chat-container { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
         .msg { max-width: 75%; padding: 12px 16px; border-radius: 20px; font-size: 15px; line-height: 1.4; word-wrap: break-word; animation: popIn 0.2s ease-out; }
         .msg.self { align-self: flex-end; background-color: var(--bubble-self); border-bottom-right-radius: 4px; margin-bottom: 2px; }
@@ -107,11 +117,8 @@
         .overlay.active { opacity: 1; pointer-events: auto; }
         .popup-box { background: #160e24; padding: 30px 20px; border-radius: 24px; text-align: center; width: 85%; border: 1px solid rgba(123, 75, 255, 0.3); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
         .popup-box h2 { margin-bottom: 25px; font-size: 22px; }
-        
-        /* FIXED CSS FOR BUTTONS */
         .popup-btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; margin-bottom: 12px; transition: transform 0.1s; cursor: pointer; }
         .popup-btn:active { transform: scale(0.98); }
-        
         .btn-continue { background: var(--accent); color: white; box-shadow: 0 0 20px var(--accent-glow); }
         .btn-leave { background: transparent; color: var(--text-muted); border: 1px solid #2a1f40; }
         .btn-danger { color: var(--danger); border-color: rgba(255, 51, 102, 0.3); }
@@ -125,37 +132,49 @@
     <div class="online-counter"><div id="connection-dot" class="dot pulse"></div><span id="user-count-num">1</span></div>
 
     <div id="lobby-screen">
-        <div class="lobby-logo-container">
-            <img src="logo.png" alt="Rizzler Logo" class="app-logo">
-            <div class="tagline">Rizz for Real Connection</div>
-        </div>
-        
-        <div class="glass-card">
-            <div class="form-group">
-                <label>I am</label>
-                <div class="pill-container" id="my-gender-group">
-                    <button class="pill active" data-value="male">Male</button>
-                    <button class="pill" data-value="female">Female</button>
-                    <button class="pill" data-value="other">Other</button>
-                </div>
+        <div class="lobby-center-wrap">
+            <div class="lobby-logo-container">
+                <img src="logo.png" alt="Rizzler Logo" class="app-logo">
+                <div class="tagline">Rizz for Real Connection</div>
             </div>
             
-            <div class="form-group">
-                <label>Looking for</label>
-                <div class="pill-container" id="search-gender-group">
-                    <button class="pill active" data-value="female">Female</button>
-                    <button class="pill" data-value="male">Male</button>
-                    <button class="pill" data-value="other">Other</button>
-                    <button class="pill" data-value="any">Anyone</button>
+            <div class="glass-card">
+                <div class="form-group">
+                    <label>I am</label>
+                    <div class="pill-container" id="my-gender-group">
+                        <button class="pill active" data-value="male">Male</button>
+                        <button class="pill" data-value="female">Female</button>
+                        <button class="pill" data-value="other">Other</button>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="legal-check">
-                <input type="checkbox" id="age-check">
-                <label for="age-check">I am 18+ and agree to keep it respectful.</label>
-            </div>
+                
+                <div class="form-group">
+                    <label>Looking for</label>
+                    <div class="pill-container" id="search-gender-group">
+                        <button class="pill active" data-value="female">Female</button>
+                        <button class="pill" data-value="male">Male</button>
+                        <button class="pill" data-value="other">Other</button>
+                        <button class="pill" data-value="any">Anyone</button>
+                    </div>
+                </div>
+                
+                <div class="legal-check">
+                    <input type="checkbox" id="age-check">
+                    <label for="age-check">I am 18+ and agree to keep it respectful.</label>
+                </div>
 
-            <button id="start-search-btn" disabled>Find Match</button>
+                <button id="start-search-btn" disabled>Find Match</button>
+            </div>
+        </div>
+
+        <div class="seo-section">
+            <h2>About Rizzler</h2>
+            <p>Rizzler is the ultimate anonymous speed dating and live chat platform. Skip the endless swiping and drop straight into real-time, blind conversations with people who actually match your vibe.</p>
+            
+            <h3>How It Works</h3>
+            <div class="seo-step"><strong>1. Set your radar:</strong> Tell us who you are and who you're looking for.</div>
+            <div class="seo-step"><strong>2. Beat the clock:</strong> You have exactly 2 minutes to make a spark. No pictures, no profiles, just pure rizz.</div>
+            <div class="seo-step"><strong>3. Unlock the chat:</strong> If you both vibe, hit "Continue" before the timer hits zero to unlock unlimited texting.</div>
         </div>
     </div>
 
