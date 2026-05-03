@@ -1,3 +1,21 @@
+// --- UNIQUE USER TRACKER --- //
+function initTracker() {
+    let uid = localStorage.getItem('rizzler_uid');
+    
+    if (!uid) {
+        // Generate a random unique ID
+        uid = 'usr_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+        localStorage.setItem('rizzler_uid', uid);
+        
+        // Send to backend only once in the user's lifetime
+        fetch('/track-user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: uid })
+        }).catch(err => console.log('Tracker error:', err));
+    }
+}
+initTracker();
 const socket = io();
 
 const statusEl = document.getElementById('status');
